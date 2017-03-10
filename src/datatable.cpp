@@ -1,19 +1,19 @@
 
-#include "DataTable.h"
+#include "datatable.h"
 
 
 using namespace std;
-
 using namespace nucmath;
 
-
-nucmath::DataTable::DataTable()
+template<size_t nColumns>
+nucmath::DataTable<nColumns>::DataTable()
 {
-
 	clear();
 }
 
-DataTable::DataTable(size_t channels)
+
+template<size_t nColumns>
+nucmath::DataTable<nColumns>::DataTable(size_t channels)
 { // TODO: !!
 /*	for(size_t i = 0; i < channels; i++)
 		addData(TableRow());
@@ -23,63 +23,70 @@ DataTable::DataTable(size_t channels)
 
 }
 
-DataTable::DataTable(const std::vector<TableRow>& dataTable )
+
+template<size_t nColumns>
+DataTable<nColumns>::DataTable(const std::vector< TABLEROW > &dataTable )
 {
 	for(size_t i = 0; i < dataTable.size(); i++)
 	{
         addRow(dataTable[i]);
 	}
 
-	for(size_t i = 0; i < numberOfColumns; i++) { calcMaxMin(i); }
+    for(size_t i = 0; i < nColumns; i++) { calcMaxMin(i); }
 
 	m_dataTableOriginal = m_dataTable;
 }
 
-DataTable::~DataTable()
+template<size_t nColumns>
+DataTable<nColumns>::~DataTable()
 {
 
 
 }
 
-void DataTable::addRow(const TableRow& row)
+template<size_t nColumns>
+void DataTable<nColumns>::addRow(const TABLEROW &row)
 {
     this->m_dataTable.push_back(row);
 }
 
-void DataTable::setSize(size_t channels)
+template<size_t nColumns>
+void DataTable<nColumns>::setSize(size_t channels)
 {
 	if(channels >this->m_dataTable.size())
 	{
 		size_t len = channels - this->m_dataTable.size();
 		for(size_t i = 0; i < len; i++)
-            addRow(TableRow());
+            addRow(TABLEROW());
 	}
 }
 
-void nucmath::DataTable::clear()
+template<size_t nColumns>
+void nucmath::DataTable<nColumns>::clear()
 {
 /*	for(size_t i = 0; i < m_dataTable.size(); i++)
-		for(size_t k = 0; k < numberOfColumns; k++)
+        for(size_t k = 0; k < nColumns; k++)
 		{
 			m_dataTable[i].x[k] = 0.0;
 		}*/
 
 	m_dataTable.clear();
 
-	for(size_t i = 0; i < numberOfColumns; ++i)
+    for(size_t i = 0; i < nColumns; ++i)
 	{
 		m_columnProp[i].max = -10e30;
 		m_columnProp[i].min = 10e10;
 	}
 }
 
-bool DataTable::load(const std::string& file, SPECTRUMFORMAT format)
+template<size_t nColumns>
+bool DataTable<nColumns>::load(const std::string& file, DATATABLEFORMAT format)
 {
 	std::ifstream in(file);
 
 	if(in.is_open() == false)
 	{
-		cout << "Datei konnte nicht geöffnet werden" << endl;
+		cout << "Datei konnte nicht geï¿½ffnet werden" << endl;
 		//cin.get();
 		return false;
 	}
@@ -99,7 +106,7 @@ bool DataTable::load(const std::string& file, SPECTRUMFORMAT format)
 
 		if(strBuf.find("MathematicaTable2"))
 		{
-			format = SPECTRUMFORMAT::MathematicaTable2;
+            format = DATATABLEFORMAT::MathematicaTable2;
 		}
 
 	}
@@ -122,7 +129,7 @@ bool DataTable::load(const std::string& file, SPECTRUMFORMAT format)
 	}
 
 
-	if(format == SPECTRUMFORMAT::OneColumn)
+    if(format == DATATABLEFORMAT::OneColumn)
 	{
 		while(!in.eof())
 		{
@@ -135,7 +142,7 @@ bool DataTable::load(const std::string& file, SPECTRUMFORMAT format)
 			{
 				for(size_t i = 0; i < (line - s + 1); i++)
 				{
-					m_dataTable.push_back(TableRow());
+                    m_dataTable.push_back(TABLEROW());
 				}
 			}
 
@@ -144,7 +151,7 @@ bool DataTable::load(const std::string& file, SPECTRUMFORMAT format)
 			line++;
 		}
 	}
-	else if(format == SPECTRUMFORMAT::TwoColumn)
+    else if(format == DATATABLEFORMAT::TwoColumn)
 	{
 		while(!in.eof())
 		{
@@ -168,7 +175,7 @@ bool DataTable::load(const std::string& file, SPECTRUMFORMAT format)
 			{
 				for(size_t i = 0; i < (line - s + 1); i++)
 				{
-					m_dataTable.push_back(TableRow());
+                    m_dataTable.push_back(TABLEROW());
 				}
 			}
 
@@ -177,7 +184,7 @@ bool DataTable::load(const std::string& file, SPECTRUMFORMAT format)
 			line++;
 		}
 	}
-	else if(format == SPECTRUMFORMAT::MathematicaTable2)
+    else if(format == DATATABLEFORMAT::MathematicaTable2)
 	{
 		in.seekg(0);
 
@@ -202,7 +209,7 @@ bool DataTable::load(const std::string& file, SPECTRUMFORMAT format)
 			{
 				for(size_t i = 0; i < (line - s + 1); i++)
 				{
-					m_dataTable.push_back(TableRow());
+                    m_dataTable.push_back(TABLEROW());
 				}
 			}
 
@@ -229,7 +236,8 @@ bool DataTable::load(const std::string& file, SPECTRUMFORMAT format)
 	return true;
 }
 
-bool DataTable::save(const string &file)
+template<size_t nColumns>
+bool DataTable<nColumns>::save(const string &file)
 {
 	std::ofstream out(file, ios_base::out);
 
@@ -237,11 +245,11 @@ bool DataTable::save(const string &file)
 	{
 		for(size_t i = 0; i < m_dataTable.size(); ++i)
 		{
-			for(size_t k = 0; k < numberOfColumns; ++k)
+            for(size_t k = 0; k < nColumns; ++k)
 			{
 				out << m_dataTable[i].x[k];
 
-				if(k+1 != numberOfColumns)
+                if(k+1 != nColumns)
 					out<< " ";
 			}
 
@@ -256,15 +264,17 @@ bool DataTable::save(const string &file)
 }
 
 
-void DataTable::calcMaxMin()
+template<size_t nColumns>
+void DataTable<nColumns>::calcMaxMin()
 {
-		for(size_t column = 0; column < numberOfColumns; column++)
+        for(size_t column = 0; column < nColumns; column++)
 		{
 			calcMaxMin(column);
 		}
 }
 
-void DataTable::calcMaxMin(size_t column)
+template<size_t nColumns>
+void DataTable<nColumns>::calcMaxMin(size_t column)
 {
 
 		for(size_t i = 0; i < m_dataTable.size(); ++i)
@@ -277,23 +287,27 @@ void DataTable::calcMaxMin(size_t column)
 
 
 
-void DataTable::sort(size_t channel)
+template<size_t nColumns>
+void DataTable<nColumns>::sort(size_t channel)
 {
 	std::sort(m_dataTable.begin(), m_dataTable.end(), sort_comparator(channel));
 }
 
-double DataTable::getMax(size_t column) const
+template<size_t nColumns>
+double DataTable<nColumns>::getMax(size_t column) const
 { 
 	return m_columnProp[column].max; 
 }
 
-double DataTable::getMin(size_t column) const
+template<size_t nColumns>
+double DataTable<nColumns>::getMin(size_t column) const
 { 
 	return m_columnProp[column].min; 
 }
 
 
-void DataTable::multiply(double factor, size_t dataIndx)
+template<size_t nColumns>
+void DataTable<nColumns>::multiply(double factor, size_t dataIndx)
 {
 	for(size_t i = 0; i < m_dataTable.size(); ++i)
 	{
@@ -301,7 +315,8 @@ void DataTable::multiply(double factor, size_t dataIndx)
 	}
 }
 
-void DataTable::add(double shift, size_t column)
+template<size_t nColumns>
+void DataTable<nColumns>::add(double shift, size_t column)
 {
 	for(size_t i = 0; i < m_dataTable.size(); ++i)
 	{
@@ -309,12 +324,14 @@ void DataTable::add(double shift, size_t column)
 	}
 }
 
-double DataTable::calculateSumOfSquares(const DataTable& hist, size_t dataIndx) const
+template<size_t nColumns>
+double DataTable<nColumns>::calcSumOfSquares(const DataTable& hist, size_t dataIndx) const
 {
-	return calculateSumOfSquares(hist, dataIndx, getMin(0), getMax(0));
+    return calcSumOfSquares(hist, dataIndx, getMin(0), getMax(0));
 }
 
-double DataTable::calculateSumOfSquares(const DataTable& modelHist, size_t dataIndx, double beginCh, double endCh) const
+template<size_t nColumns>
+double DataTable<nColumns>::calcSumOfSquares(const DataTable& modelHist, size_t dataIndx, double beginCh, double endCh) const
 {
 	double res = 0.0;
 
@@ -359,7 +376,8 @@ double DataTable::calculateSumOfSquares(const DataTable& modelHist, size_t dataI
 }
 
 
-void DataTable::fold(DataTable& folded, float resolution, size_t channel) const
+template<size_t nColumns>
+void DataTable<nColumns>::fold(DataTable& folded, float resolution, size_t channel) const
 {
 
 	const bool mirrorMode = false;
@@ -424,7 +442,7 @@ void DataTable::fold(DataTable& folded, float resolution, size_t channel) const
 
 	}
 
-	for(int j = 0; j < numberOfColumns; j++)
+    for(int j = 0; j < nColumns; j++)
 		folded.calcMaxMin(j);
 
 //	std::cout << " Max: " << folded.getMax(1) << std::endl;
@@ -432,21 +450,22 @@ void DataTable::fold(DataTable& folded, float resolution, size_t channel) const
 //	std::cout << "Faltung abgeschlossen." << std::endl;
 }
 
-const std::vector<TableRow> DataTable::getData(double binWidth, size_t rowIndxToResample, double oldBinWidth) const
+template<size_t nColumns>
+const std::vector<TableRow<nColumns>> nucmath::DataTable<nColumns>::getData(double binWidth, size_t rowIndxToResample, double oldBinWidth) const
 {
 	DataTable temp = *this;
 	temp.sort(rowIndxToResample);
-	std::vector<TableRow>& dat = temp.getData();
+    std::vector<TABLEROW>& dat = temp.getData();
 
 	if(dat.size() < 2)
 		return dat;
 
 	// neue Tabelle erstellen und speicher reservieren
-	std::vector<TableRow> resampledData;
+    std::vector<TABLEROW> resampledData;
 	const double startValue = dat[0].x[rowIndxToResample];
 	size_t newLength = static_cast<size_t>(floor(static_cast<double>(dat[dat.size()-1].x[rowIndxToResample]-startValue)/binWidth))+2;
 	resampledData.reserve(newLength);
-	for(size_t i = 0; i <newLength; ++i) { resampledData.push_back(TableRow());}
+    for(size_t i = 0; i <newLength; ++i) { resampledData.push_back(TABLEROW());}
 
 	double xBin = 0.0;
 	if(oldBinWidth > 0.0)
@@ -455,11 +474,11 @@ const std::vector<TableRow> DataTable::getData(double binWidth, size_t rowIndxTo
 	size_t ch = 0;
 	for(size_t i = 0; i < dat.size(); ++i)
 	{
-		TableRow row = dat[i];
+        TABLEROW row = dat[i];
 		double x = dat[i].x[rowIndxToResample];
 	   // double xBin = 1.0;
 
-		// das alte Bin passt komplett in das neue Bin rein -> übernehmen
+		// das alte Bin passt komplett in das neue Bin rein -> ï¿½bernehmen
 		if(startValue+(ch-0.0000)*binWidth <= x && x+xBin < startValue+(ch+1)*binWidth)
 		{
 			resampledData.at(ch) += row;
@@ -539,7 +558,8 @@ Hist2d DataTable::meanHist(double binWidth, size_t columnToRebin, size_t columnW
 */
 
 
-double DataTable::getSum(size_t column)
+template<size_t nColumns>
+double DataTable<nColumns>::getSum(size_t column)
 {
 	double result = 0.0;
 	for(size_t i = 0; i < m_dataTable.size(); ++i)
@@ -585,3 +605,15 @@ void Histogram::setNumberOfBins(size_t number)
 	}
 
 }*/
+
+
+template class DataTable<1>;
+template class DataTable<2>;
+template class DataTable<3>;
+template class DataTable<4>;
+template class DataTable<5>;
+template class DataTable<6>;
+template class DataTable<7>;
+template class DataTable<8>;
+template class DataTable<9>;
+template class DataTable<10>;

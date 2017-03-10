@@ -1,10 +1,10 @@
-/*!
+/**
 
     @brief Histogram class
 
     @author 
 
-  */
+*/
 
 #include <vector>
 #include <algorithm>
@@ -31,16 +31,16 @@ public:
      * @param binWidth
      * @param numberOfBins
      */
-    void init(double startPosition, double binWidth, size_t numberOfBins = 100);
+    void init(double startPosition, double binWidth, size_t nBins = 100);
 
 
 
     /**
-     * @brief Add an entry to the histogram over direct access to the bin.
+     * @brief Add an entry to the histogram.
      *
      *
-     * @param x The bin (or x-position) on which the value should be added.
-     * @param y The value that should be added to the histogram.
+     * @param x The value that should be added.
+     * @param y The amount of the value x that should be added to the histogram.
      * @param expand Have to be true, if the histogram should add new bins, if x is bigger than histogram size.
      */
     bool add(double x, double y=1.0, bool expand=true);
@@ -54,7 +54,77 @@ public:
      * @param xWidth
      * @param binWidth
      */
-    void create(DataTable &datatable, size_t column, size_t columnData, double xWidth, double binWidth);
+    template <size_t nColumns>
+    bool create(DataTable<nColumns> &datatable, size_t column, double binWidth)
+    {
+        if(column >= nColumns)
+            return false;
+
+        auto data = datatable.getData();
+        if(data.size() == 0)
+            return false;
+
+        init(data.at(0).x[column], binWidth, 8);
+
+        for(size_t i = 0; i < data.size(); i++)
+        {
+            add(data.at(i).x[column], 1, true);
+        }
+    }
+
+
+    /**
+     *  @brief: Create a Histogram from a histogram contained inside the DataTable container.
+     *
+     */
+    template <size_t nColumns>
+    bool create(DataTable<nColumns> &datatable, size_t xColumn, size_t yColumn, double xWidth, double binWidth)
+    {
+        if(xColumn >= nColumns || yColumn >= nColumns)
+            return false;
+
+        auto data = datatable.getData();
+        if(data.size() == 0)
+            return false;
+
+        size_t binNr = 0;
+        startValue = data.at(0).x[xColumn]- xWidth/2.0;
+        m_binWidth = binWidth;
+        const double endValue = data.at(data.size()-1).x[xColumn]+xWidth/2.0;
+        const size_t numOfBins = ceil((endValue-startValue)/binWidth);  // round up
+        m_data.clear();
+        m_data.resize(numOfBins,0);
+
+
+        for(size_t i = 0; i < data.size();i++)
+        {
+            double newBinValue = 0;
+            const double xi = data.at(i).x[xColumn];
+            binNr = floor((xi - xWidth/2.0 - startValue)/binWidth);
+
+            // value fit completely into the bin width
+            if(xi+xWidth/2.0 <= startValue + binWidth*(binNr+1))
+            {
+                newBinValue += data.at(i).x[yColumn];
+            }
+            else if(xi+xWidth/2.0 > startValue + binWidth*(binNr+1)
+                    && xi+xWidth/2.0 <= startValue + binWidth*(binNr+2))
+            {
+                double RestFraction = ((xi+xWidth/2.0)-(startValue + binWidth*(binNr+1)))/xWidth;
+                newBinValue += data.at(i).x[yColumn]*(1.0-RestFraction);
+                double restF = data.at(i).x[yColumn]*RestFraction;
+                add(binNr+1, restF, true);
+            }
+            else
+            {
+                std::cout<< "Hist2d: a data point can't be splitted over more than 2 bins."<<std::endl;
+            }
+
+            add(binNr, newBinValue, true);
+        }
+
+        changed = true;
+    }
 
 
     /**
@@ -64,22 +134,45 @@ public:
     void setName(const std::string &name);
 
 
-    void fold(Hist& folded,double resolution_sigma);
+    /**
+     * @brief Fold the histogram with a normal distribution.
+     * @param folded
+     * @param sigmaResolution
+     */
+    void fold(Hist& folded, double sigmaResolution);
+
+
+    /**
+     * @brief Set new bin width.
+     * @param width
+     * @return
+     */
+    bool setBinWidth(double width);
 
 
 	double getStartX() const;
 	double getBinWidth() const;
 
     /**
-     * @brief Return the number of bins in the histogram.
+     * @brief Return the number of bins of the histogram.
      *
      * @return Number of bins.
      */
-	size_t numberOfBins() const;
+    size_t nBins() const;
 
-    Hist& operator=(const Hist & hist2d);
+    Hist& operator=(const Hist & hist);
 
+
+    /**
+     * @brief Return the first bin (left border) and the last bin (right border)
+     *          that corresponds to a value that is greater equal to the threshold value.
+     *
+     * @param threshold
+     * @param left_border
+     * @param right_border
+     */
     void getThresholdBorders(double threshold, size_t& left_border, size_t& right_border) const;
+
 
     /**
      * @brief Get maximal value stored in a bin.
@@ -101,21 +194,29 @@ public:
      */
     double sum() const;
 
+
+    /**
+     * @brief Get the mean value of all bins.
+     * @return
+     */
+    double mean() const;
+
+
     /**
      * @brief Get the bin with the biggest value in the histogram.
      *        If the are many bins with the same value, the first one counts.
      * @return
      */
-    size_t max_bin();
+    size_t maxBin();
 
 
-    size_t mean_bin();
+    size_t meanBin();
 
-
+/*
     double mean_x() const;
 
     double standardDeviation() const;
-
+*/
 
     /**
      * @brief Get status about the changing of the data stored in the histogram.
@@ -129,22 +230,25 @@ public:
 	void clear();
 
 
-	std::vector<int>& data();
-	const std::vector<int>& data() const;
-    std::pair<double,double> data(std::size_t bin) const;
+    std::vector<double>& data();
+    const std::vector<double>& data() const;
+    std::pair<double,double> data(size_t bin) const;
+
+    const Hist& getCopy() const { return *this; }
+    void setCopy(const Hist &hist);
 
 private:
 
-    std::vector<int> m_data;     //! Histogram data
+    std::vector<double> m_data;     //! Histogram data
     double m_binWidth;              //! The width of on bin.
- //   size_t startBin;
+
 
     /**
      * @brief The smallest value on the x-axis (the x-coordinate of the first bin).
      *
      * Its necessary to avoid big m_data size, if the histogram is starting with big values.
      */
-    double m_startX;
+    double startValue;
 
     bool initialized;
 

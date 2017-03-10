@@ -16,12 +16,12 @@ nucmath::Hist::~Hist()
 
 }
 
-void nucmath::Hist::init(double startValue, double binWidth, size_t numberOfBins)
+void nucmath::Hist::init(double startValue, double binWidth, size_t nBins)
 {
-    m_startX = startValue;
+    startValue = startValue;
     m_binWidth = binWidth;
     m_data.clear();
-    m_data.resize(numberOfBins,0);
+    m_data.resize(nBins,0);
     initialized = true;
     changed = true;
 }
@@ -29,7 +29,7 @@ void nucmath::Hist::init(double startValue, double binWidth, size_t numberOfBins
 void nucmath::Hist::clear()
 {
     m_data.clear();
-    m_startX = 0;
+    startValue = 0;
     m_binWidth = 1;
     initialized = false;
     changed = true;
@@ -43,19 +43,25 @@ nucmath::Hist& nucmath::Hist::operator=(const nucmath::Hist & hist2d)
         m_data.push_back(*it);
     }
 
-    m_startX = hist2d.getStartX();
+    startValue = hist2d.getStartX();
     m_binWidth = hist2d.getBinWidth();
     changed = true;
 
     return *this;
 }
 
-std::pair<double, double> nucmath::Hist::data(std::size_t bin) const
+std::pair<double, double> nucmath::Hist::data(size_t bin) const
 {
     if(bin < m_data.size())
-        return std::pair<double, double>(m_startX+m_binWidth*bin, m_data.at(bin));
+        return std::pair<double, double>(startValue+m_binWidth*bin, m_data.at(bin));
     else
         throw std::out_of_range("nucmath::Hist::data(std::size_t bin): bin="+std::to_string(bin));
+}
+
+void nucmath::Hist::setCopy(const nucmath::Hist &hist)
+{
+    *this = hist;
+    changed = true;
 }
 
 double nucmath::Hist::max()
@@ -80,62 +86,16 @@ double nucmath::Hist::min()
     return minVal;
 }
 
-void nucmath::Hist::create(DataTable &datatable, size_t column, size_t columnData, double xWidth, double binWidth)
-{
-    auto data = datatable.getData();
 
-    size_t binNr = 0;
-    if(data.size() == 0)
-        return;
-
-    m_startX = data.at(0).x[column]- xWidth/2.0;
-    m_binWidth = binWidth;
-    const double endValue = data.at(data.size()-1).x[column]+xWidth/2.0;
-    const size_t numOfBins = ceil((endValue-m_startX)/binWidth);  // round up
-    m_data.clear();
-    m_data.resize(numOfBins,0);
-
-
-    for(size_t i = 0; i < data.size();i++)
-    {
-        double newBinValue = 0;
-
-        const double xi = data.at(i).x[column];
-
-        binNr = floor((xi - xWidth/2.0 - m_startX)/binWidth);
-
-        // value fit completely into the bin width
-        if(xi+xWidth/2.0 <= m_startX + binWidth*(binNr+1))
-        {
-            newBinValue += data.at(i).x[columnData];
-        }
-        else if(xi+xWidth/2.0 > m_startX + binWidth*(binNr+1)
-                && xi+xWidth/2.0 <= m_startX + binWidth*(binNr+2))
-        {
-            double RestFraction = ((xi+xWidth/2.0)-(m_startX + binWidth*(binNr+1)))/xWidth;
-            newBinValue += data.at(i).x[columnData]*(1.0-RestFraction);
-            double restF = data.at(i).x[columnData]*RestFraction;
-            add(binNr+1, restF, true);
-        }
-        else
-        {
-            std::cout<< "Hist2d: a data point can't be splitted over more than 2 bins."<<std::endl;
-        }
-
-        add(binNr, newBinValue, true);
-    }
-
-    changed = true;
-}
 
 bool nucmath::Hist::add(double x, double y, bool expand)
 {
     if(!initialized)
     {
         if(x>=0)
-            m_startX = floor(x/m_binWidth); // value of the first bin
+            startValue = x - fmod(x, m_binWidth); // value of the first bin
         else
-            m_startX = ceil(x/m_binWidth); // value of the first bin
+            startValue = x - fmod(x, m_binWidth) - m_binWidth; // value of the first bin
 
         initialized = true;
     }
@@ -144,18 +104,18 @@ bool nucmath::Hist::add(double x, double y, bool expand)
 
 
     // expand to smaller values
-    if(x < m_startX)
+    if(x < startValue)
     {
-        size_t bin_diff = ceil((m_startX-x)/m_binWidth);
+        size_t bin_diff = ceil((startValue-x)/m_binWidth);
         for(size_t i = 0; i < bin_diff; i++)
         {
             m_data.emplace(m_data.begin(), 0.0);
         }
-        m_startX -= bin_diff*m_binWidth;
+        startValue -= bin_diff*m_binWidth;
     }
 
 
-    size_t bin = floor((x-m_startX)/m_binWidth);
+    size_t bin = floor((x-startValue)/m_binWidth);
 
     if(bin < m_data.size())
         m_data.at(bin) += y;
@@ -185,7 +145,12 @@ double nucmath::Hist::sum() const
     return std::accumulate(m_data.begin(), m_data.end(), 0);
 }
 
-size_t nucmath::Hist::max_bin()
+double nucmath::Hist::mean() const
+{
+    return sum()/nBins();
+}
+
+size_t nucmath::Hist::maxBin()
 {
     double maxVal = std::numeric_limits<double>::min();
     size_t max_pos = 0;
@@ -201,22 +166,20 @@ size_t nucmath::Hist::max_bin()
     return max_pos;
 }
 
-size_t nucmath::Hist::mean_bin()
+size_t nucmath::Hist::meanBin()
 {
-    const double m = mean_x();
-    double s = 0;
+    double m = mean();
     for(size_t i = 0; i < m_data.size(); i++)
     {
-        s+= m_data[i]*(m_startX+m_binWidth*i);
-        if(s >= m)
+        if(m_data[i] >= m)
         {
             return i;
         }
     }
 
-    return 0;
+    return std::numeric_limits<size_t>::quiet_NaN();
 }
-
+/*
 double nucmath::Hist::mean_x() const
 {
     if(m_data.size()==0)
@@ -228,12 +191,13 @@ double nucmath::Hist::mean_x() const
     double s = 0;
     for(size_t i = 0; i < m_data.size(); i++)
     {
-        s+= m_data[i]*(m_startX+m_binWidth*i);
+        s+= m_data[i]*(startValue+m_binWidth*i);
     }
 
     return s/sum();
 }
-
+*/
+/*
 double nucmath::Hist::standardDeviation() const
 {
     if(m_data.size()<2)
@@ -250,6 +214,7 @@ double nucmath::Hist::standardDeviation() const
         return std::sqrt(var/(m_data.size()*(m_data.size()-1.0)));
     }
 }
+*/
 
 bool nucmath::Hist::isChanged()
 {
@@ -274,7 +239,7 @@ void nucmath::Hist::truncateZeroBins()
     if(i != 0)
     {
         m_data.erase(std::remove(m_data.begin(), m_data.begin()+i, 0), m_data.end());
-        m_startX += m_binWidth*i;
+        startValue += m_binWidth*i;
     }
 
     changed = true;
@@ -309,12 +274,12 @@ void nucmath::Hist::setName(const std::string &name)
         this->name = "noname";
 }
 
-void nucmath::Hist::fold(Hist& folded,double resolution_sigma)
+void nucmath::Hist::fold(Hist& folded,double sigmaResolution)
 {
 
     const bool mirrorMode = false;
 
-    const size_t len = numberOfBins();
+    const size_t len = nBins();
     folded.init(this->getStartX(),this->getBinWidth(),len);
 
 
@@ -330,7 +295,7 @@ void nucmath::Hist::fold(Hist& folded,double resolution_sigma)
             progress += 0.05;
         }*/
 
-        const int kernelWidth2 = static_cast<int>(ceil(resolution_sigma*3)+1);
+        const int kernelWidth2 = static_cast<int>(ceil(sigmaResolution*3)+1);
 
         double integr = 0.0, integrSum = 0.0;
 
@@ -342,7 +307,7 @@ void nucmath::Hist::fold(Hist& folded,double resolution_sigma)
                 while(indx >= len)
                     continue;
 
-                integr = normalDistIntegral(0, resolution_sigma, k, k+this->getBinWidth());
+                integr = normalDistIntegral(0, sigmaResolution, k, k+this->getBinWidth());
                 folded.data()[bin] += m_data[bin]*integr;
             }
             else
@@ -350,7 +315,7 @@ void nucmath::Hist::fold(Hist& folded,double resolution_sigma)
                 const int indx = static_cast<int>(bin)+k;
                 if(indx >=0)
                 {
-                    integr = normalDistIntegral(0, resolution_sigma, k-this->getBinWidth()/2.0, k+this->getBinWidth()/2.0);
+                    integr = normalDistIntegral(0, sigmaResolution, k-this->getBinWidth()/2.0, k+this->getBinWidth()/2.0);
                     //integr = normalDistIntegral(0, resolution_sigma, k, k+this->getBinWidth());
                     //folded.data()[indx] += m_data[bin]*integr;
                     folded.add(indx, m_data[bin]*integr);
@@ -368,13 +333,19 @@ void nucmath::Hist::fold(Hist& folded,double resolution_sigma)
 
 }
 
+bool nucmath::Hist::setBinWidth(double width)
+{
+    if(width <= 0)
+        return false;
+    else
+        m_binWidth = width;
+}
 
-double nucmath::Hist::getStartX() const { return m_startX; }
+double nucmath::Hist::getStartX() const { return startValue; }
 double nucmath::Hist::getBinWidth() const { return m_binWidth; }
 
 
-size_t nucmath::Hist::numberOfBins() const { return m_data.size(); }
+size_t nucmath::Hist::nBins() const { return m_data.size(); }
 
-std::vector<int>& nucmath::Hist::data()  { return m_data; }
-const std::vector<int>& nucmath::Hist::data() const { return m_data; }
-
+std::vector<double>& nucmath::Hist::data()  { return m_data; }
+const std::vector<double>& nucmath::Hist::data() const { return m_data; }

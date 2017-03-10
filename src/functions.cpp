@@ -21,6 +21,24 @@ double nucmath::normal_dist2_pdf(const std::array<double, 6> &p, double x)
 		+ p[3] * std::exp(-((p[4] - x)*(p[4] - x)) / (2.0*p[5] * p[5])) / (SQRT_OF_PI2*p[5]);
 }
 
+/*
+    0 = A
+    1 = µ1
+    2 = sigma1
+    3 = µ2
+    4 = sigma2
+    5 = rho (-1 < rho < 1)!
+*/
+double nucmath::normal_dist_2d_pdf(const std::array<double, 6> &p, double x1, double x2)
+{
+    const double t1 = (p[1] - x1)*(p[1] - x1)/(p[2]*p[2]);
+    const double t2 = (p[3] - x2)*(p[3] - x2)/(p[4]*p[4]);
+    const double t3 = 2*p[5]*(p[1] - x1)*(p[3] - x2)/(p[2]*p[4]);
+    const double rho = p[5];
+
+    return p[0] * std::exp(-(t1+t2-t3)/(2*(1-rho*rho)))/(PI2*p[2]*p[4]*sqrt(1-rho*rho));
+}
+
 
 
 double nucmath::normal_dist_intersection_point(double mu1, double sig1, double A1, double mu2, double sig2, double A2)

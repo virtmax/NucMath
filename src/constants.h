@@ -1,9 +1,6 @@
 
 
-
-
-#ifndef CONSTANTS_H
-#define CONSTANTS_H
+#pragma once
 
 namespace nucmath
 {
@@ -24,5 +21,3 @@ namespace nucmath
 
 	const double SPEED_OF_LIGHT = 299792458.0;
 }
-
-#endif // CONSTANTS_H

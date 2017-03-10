@@ -32,6 +32,8 @@ namespace nucmath
 	// Summe aus zwei normal_dist_pdf
 	double normal_dist2_pdf(const std::array<double, 6> &p, double x);
 
+    double normal_dist_2d_pdf(const std::array<double, 6> &p, double x1, double x2);
+
 
 	double normal_dist_intersection_point(double mu1, double sigma1, double A1, double mu2, double sigma2, double A2);
 

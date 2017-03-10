@@ -4,8 +4,7 @@
 #include <random>
 
 
-#ifndef _MINIMIZER_DOWNHILL_SIMPLEX
-#define _MINIMIZER_DOWNHILL_SIMPLEX
+#pragma once
 
 #include "regression.h"
 #include "optpoint.h"
@@ -24,5 +23,3 @@ double downhill_simplex_optimization(FUNC2MIN opt_func,
 }
 
 
-
-#endif

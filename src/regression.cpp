@@ -15,7 +15,7 @@ nucmath::Regression::~Regression()
 
 }
 
-// ax + b
+// a*x + b
 void nucmath::Regression::linear(const std::vector<std::array<double, 2>> &points, double &a, double&b, double &R2)
 {
     const double N = points.size();
@@ -44,8 +44,8 @@ void nucmath::Regression::linear(const std::vector<std::array<double, 2>> &point
         std::cout << "linear_regression: division by 0.";
         return;
     }
-    b = b_counter/b_denominator;
-    a = (sum_y - b*sum_x)/N;
+    a = b_counter/b_denominator;
+    b = (sum_y - a*sum_x)/N;
 
     const double R2_counter = b_counter*b_counter;
     const double R2_denominator = (N*sum_x2 - sum_x*sum_x)*(N*sum_y2 - sum_y*sum_y);

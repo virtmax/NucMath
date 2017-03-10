@@ -1,8 +1,7 @@
 
 
 
-#ifndef REGRESSION_H
-#define REGRESSION_H
+#pragma once
 
 #include <iostream>
 #include <vector>
@@ -27,5 +26,3 @@ namespace nucmath
 
 }
 
-
-#endif // REGRESSION_H

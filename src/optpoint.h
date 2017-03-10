@@ -10,8 +10,8 @@
 #include "minimizerdef.h"
 
 #pragma once
-
-
+#undef max
+#undef min
 
 class optPoint
 {

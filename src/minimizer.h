@@ -1,8 +1,7 @@
 
 
 
-#ifndef MINIMIZER_H
-#define MINIMIZER_H
+#pragma once
 
 
 #include <vector>
@@ -68,4 +67,4 @@ private:
 
 }
 
-#endif // MINIMIZER_H
+

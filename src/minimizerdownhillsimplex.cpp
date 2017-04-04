@@ -92,9 +92,11 @@ double nucmath::downhill_simplex_optimization(FUNC2MIN opt_func,
     points[0].p = start_p;
     points[0].fp = opt_func(start_p);
 
+    // create at least 5 points per parameter
     if(number_of_seed_points < NP*5)
         number_of_seed_points = NP*5;
 
+    // create initial points from a flat distribution over the parameter space
     std::vector<double> random_point;
     random_point.resize(N);
     for(size_t k = 0; k < number_of_seed_points; k++)
@@ -228,7 +230,10 @@ double nucmath::downhill_simplex_optimization(FUNC2MIN opt_func,
     }
 
 
-    // Unsicherheiten der Parameter bestimmen.
+
+    //////////////////////////
+    // uncertainty estimation
+    //////////////////////////
 
     std::sort(points.begin(), points.end());	// aufsteigend 1 2 3 4
 
@@ -265,9 +270,9 @@ double nucmath::downhill_simplex_optimization(FUNC2MIN opt_func,
 
                 par_variations.push_back({varP.p[j], varP.fp});
 
-                std::cout << "{"<<varP.p[j] <<", "<<varP.fp << "},";
+//                std::cout << "{"<<varP.p[j] <<", "<<varP.fp << "},";
             }
-            std::cout << std::endl;
+//            std::cout << std::endl;
 
             // minimum der regressionsparabel als möglichen besten punkt anschauen
             double a,b,c;   // zu bestimmende parametriesierung der parabel
@@ -305,7 +310,7 @@ double nucmath::downhill_simplex_optimization(FUNC2MIN opt_func,
         if(positive_par_a)
         {
             stop = false;
-            std::cout << " a < 0. Wiederhole. " << std::endl;
+//            std::cout << " a < 0. Wiederhole. " << std::endl;
         }
         else
         {
@@ -321,7 +326,7 @@ double nucmath::downhill_simplex_optimization(FUNC2MIN opt_func,
         // Eine quadratiche Funktion an die Datenpunkte anpassen
         double a,b,c;
 		regression.quadratic(variations.at(j), a, b, c);
-        std::cout << "a=" << a << std::endl<< "b=" << b << std::endl<< "c=" << c << std::endl;
+//        std::cout << "a=" << a << std::endl<< "b=" << b << std::endl<< "c=" << c << std::endl;
 
         if(a > 0)   // parabel nach oben geöffnet
         {
@@ -333,7 +338,7 @@ double nucmath::downhill_simplex_optimization(FUNC2MIN opt_func,
         }
         else
         {
-            std::cout << "Parabel nach unten geöffnet. a < 0. Unsicherheit kann nicht berechnet werden. " << std::endl;
+//            std::cout << "Parabel nach unten geöffnet. a < 0. Unsicherheit kann nicht berechnet werden. " << std::endl;
         }
     }
 

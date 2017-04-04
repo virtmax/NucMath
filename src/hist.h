@@ -135,6 +135,12 @@ public:
 
 
     /**
+     * @brief Get internal name.
+     */
+    std::string getName() const { return name; }
+
+
+    /**
      * @brief Fold the histogram with a normal distribution.
      * @param folded
      * @param sigmaResolution
@@ -223,7 +229,7 @@ public:
      * @return true, if the the histagram has changed since last isChanged-call, e.g. after the add-method was calling
      *         false, otherwise
      */
-    bool isChanged();
+    bool isChanged(bool leaveChanged = false);
 
     void truncateZeroBins();
 

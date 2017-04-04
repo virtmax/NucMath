@@ -216,10 +216,10 @@ double nucmath::Hist::standardDeviation() const
 }
 */
 
-bool nucmath::Hist::isChanged()
+bool nucmath::Hist::isChanged(bool leaveChanged)
 {
     bool temp = changed;
-    changed = false;
+    changed = (leaveChanged==true) ? true : false;
     return temp;
 }
 

@@ -3,3 +3,7 @@ compiler: g++
 
 script:
   cmake .
+
+
+after_success:
+    - coveralls

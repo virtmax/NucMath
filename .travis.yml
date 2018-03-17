@@ -1,6 +1,9 @@
 language: cpp
 compiler: g++
 
+before_install:
+  - pip install --user cpp-coveralls
+
 script:
   cmake .
 

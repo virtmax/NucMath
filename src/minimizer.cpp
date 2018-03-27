@@ -91,6 +91,23 @@ std::string Minimizer::getFormatedConstrains()
     return text;
 }
 
+std::string Minimizer::getFormatedInitialPointsAndConstrains()
+{
+    std::string text = "initial points with constrains:\n";
+
+    if(result.size() != param_names.size())
+    {
+        text += "warning: number of parameters != number of parameter names.\n";
+    }
+
+    for(size_t i = 0; i < param_names.size() && i < initial_points.size(); i++)
+    {
+        text += param_names[i] + "=(" + std::to_string(initial_points[i][1]) + " < x=" + std::to_string(initial_points[i][0]) + " < " + std::to_string(initial_points[i][2]) + ")\n";
+    }
+
+    return text;
+}
+
 std::string Minimizer::getFormatedFitResults()
 {
     std::string text = "fit results:\n";
@@ -108,8 +125,9 @@ std::string Minimizer::getFormatedFitResults()
     return text;
 }
 
-bool Minimizer::findFit(MODELFUNC modelFunction, size_t interations, double tolerance)
+bool Minimizer::findFit(size_t interations, double tolerance)
 {
+    /*
     func2min = [&](const std::vector<double> &p)
     {
         double chi2result = 0.0;
@@ -125,6 +143,7 @@ bool Minimizer::findFit(MODELFUNC modelFunction, size_t interations, double tole
         }
         return chi2result/((double)len);
     };
+    */
 
     return downhill_simplex_optimization(func2min,initial_points, result, result_sigma, tolerance, interations, number_of_seed_points);
 }

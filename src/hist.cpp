@@ -9,6 +9,10 @@ nucmath::Hist::Hist()
     changed = true;
 }
 
+nucmath::Hist::Hist(double startValue, double binWidth, size_t nBins)
+{
+    init(startValue, binWidth, nBins);
+}
 
 nucmath::Hist::~Hist()
 {
@@ -18,7 +22,7 @@ nucmath::Hist::~Hist()
 
 void nucmath::Hist::init(double startValue, double binWidth, size_t nBins)
 {
-    startValue = startValue;
+    this->startValue = startValue;
     m_binWidth = binWidth;
     m_data.clear();
     m_data.resize(nBins,0);
@@ -266,6 +270,44 @@ void nucmath::Hist::getThresholdBorders(double threshold, size_t& left_border, s
     }
 }
 
+bool nucmath::Hist::sumUp(const Hist& hist)
+{
+    if(hist.getBinWidth() < getBinWidth())
+    {
+        std::cout << "nucmath::Hist::sumUp error: bin width should be equal to or bigger than of the destination histogram" << std::endl;
+        return false;
+    }
+
+    double frac = hist.getBinWidth()/getBinWidth();
+    double parts = ceil(frac+1.0);
+
+    for(size_t i = 0; i < hist.nBins(); i++)
+    {
+        const double y = hist.data().at(i);
+        const double x = hist.getStartX() + hist.getBinWidth()*i;
+
+        for(size_t j = 0; j < (size_t)parts; j++)
+        {
+            if(j == 0)
+            {
+                double are_fraction = getBinWidth()-fmod(x - getStartX(), getBinWidth());
+                add(x, y*are_fraction/parts);
+            }
+            else if(j == (size_t)parts-1)
+            {
+                double are_fraction = fmod(x - getStartX(), getBinWidth());
+                add(x, y*are_fraction/parts);
+            }
+            else
+            {
+                add(x, y/parts);
+            }
+        }
+    }
+
+    return true;
+}
+
 void nucmath::Hist::setName(const std::string &name)
 {
     if(name.size()>0)
@@ -341,6 +383,13 @@ bool nucmath::Hist::setBinWidth(double width)
         m_binWidth = width;
 }
 
+bool nucmath::Hist::setStartX(double startX)
+{
+    this->startValue = startX;
+
+	return true;
+}
+
 double nucmath::Hist::getStartX() const { return startValue; }
 double nucmath::Hist::getBinWidth() const { return m_binWidth; }
 
@@ -349,3 +398,24 @@ size_t nucmath::Hist::nBins() const { return m_data.size(); }
 
 std::vector<double>& nucmath::Hist::data()  { return m_data; }
 const std::vector<double>& nucmath::Hist::data() const { return m_data; }
+
+void nucmath::Hist::save(const std::string& path) const
+{
+    std::ofstream stream;
+    stream.open(path);
+
+    if(stream.is_open())
+    {
+        for(size_t i = 0; i < nBins(); i++)
+        {
+            auto v = data(i);
+            stream << v.first << "\t" << v.second << std::endl;
+        }
+    }
+    else
+    {
+        std::cout<< "Hist::save: can't open " << path << std::endl;
+    }
+
+    stream.close();
+}

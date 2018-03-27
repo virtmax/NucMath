@@ -37,11 +37,12 @@ public:
 
     void setParameterNames(std::vector<std::string> names);
 
-    bool findFit(MODELFUNC modelFunction, size_t interations, double tolerance);
+    bool findFit(size_t interations, double tolerance);
 
 
     std::string getFormatedInitialPoints();
     std::string getFormatedConstrains();
+    std::string getFormatedInitialPointsAndConstrains();
     std::string getFormatedFitResults();
 
     std::vector<double> getResult() { return result; }

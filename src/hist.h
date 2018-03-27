@@ -23,6 +23,7 @@ class Hist
 {
 public:
     Hist();
+    Hist(double startValue, double binWidth, size_t nBins);
     virtual ~Hist();
 
     /**
@@ -156,8 +157,13 @@ public:
     bool setBinWidth(double width);
 
 
-	double getStartX() const;
+
 	double getBinWidth() const;
+
+
+    bool setStartX(double startX);
+
+    double getStartX() const;
 
     /**
      * @brief Return the number of bins of the histogram.
@@ -178,6 +184,9 @@ public:
      * @param right_border
      */
     void getThresholdBorders(double threshold, size_t& left_border, size_t& right_border) const;
+
+
+    bool sumUp(const Hist& hist);
 
 
     /**
@@ -218,6 +227,9 @@ public:
 
     size_t meanBin();
 
+
+
+
 /*
     double mean_x() const;
 
@@ -242,6 +254,8 @@ public:
 
     const Hist& getCopy() const { return *this; }
     void setCopy(const Hist &hist);
+
+    void save(const std::string& path) const;
 
 private:
 

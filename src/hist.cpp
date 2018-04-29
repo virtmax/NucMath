@@ -24,19 +24,36 @@ void nucmath::Hist::init(double startValue, double binWidth, size_t nBins)
 {
     this->startValue = startValue;
     m_binWidth = binWidth;
-    m_data.clear();
-    m_data.resize(nBins,0);
+    field.clear();
+    field.resize(nBins,0);
     initialized = true;
     changed = true;
 }
 
 void nucmath::Hist::clear()
 {
-    m_data.clear();
+    field.clear();
     startValue = 0;
     m_binWidth = 1;
     initialized = false;
     changed = true;
+}
+
+nucmath::Hist nucmath::Hist::getCFD()
+{
+    Hist copy = *this;
+    copy.truncateZeroBins();
+    Hist cfd;
+    cfd.init(0, copy.getBinWidth(), copy.nBins());
+    double sum = 0.0;
+    for(size_t i = 0; i < copy.nBins(); i++)
+    {
+        const auto& [bin, val] = copy.data(i);
+        sum += val;
+        cfd.add(bin, sum);
+    }
+
+    return cfd;
 }
 
 nucmath::Hist& nucmath::Hist::operator=(const nucmath::Hist & hist2d)
@@ -44,7 +61,7 @@ nucmath::Hist& nucmath::Hist::operator=(const nucmath::Hist & hist2d)
     clear();
     for(auto it = hist2d.data().begin(); it !=hist2d.data().end(); it++)
     {
-        m_data.push_back(*it);
+        field.push_back(*it);
     }
 
     startValue = hist2d.getStartX();
@@ -56,8 +73,8 @@ nucmath::Hist& nucmath::Hist::operator=(const nucmath::Hist & hist2d)
 
 std::pair<double, double> nucmath::Hist::data(size_t bin) const
 {
-    if(bin < m_data.size())
-        return std::pair<double, double>(startValue+m_binWidth*bin, m_data.at(bin));
+    if(bin < field.size())
+        return std::pair<double, double>(startValue+m_binWidth*bin, field.at(bin));
     else
         throw std::out_of_range("nucmath::Hist::data(std::size_t bin): bin="+std::to_string(bin));
 }
@@ -71,7 +88,7 @@ void nucmath::Hist::setCopy(const nucmath::Hist &hist)
 double nucmath::Hist::max()
 {
     double maxVal = std::numeric_limits<double>::min();
-    for(auto it = m_data.begin(); it !=m_data.end(); it++)
+    for(auto it = field.begin(); it !=field.end(); it++)
     {
         maxVal = std::max<double>(maxVal, *it);
     }
@@ -82,7 +99,7 @@ double nucmath::Hist::max()
 double nucmath::Hist::min()
 {
     double minVal = std::numeric_limits<double>::max();
-    for(auto it = m_data.begin(); it !=m_data.end(); it++)
+    for(auto it = field.begin(); it !=field.end(); it++)
     {
         minVal = std::min<double>(minVal, *it);
     }
@@ -113,7 +130,7 @@ bool nucmath::Hist::add(double x, double y, bool expand)
         size_t bin_diff = ceil((startValue-x)/m_binWidth);
         for(size_t i = 0; i < bin_diff; i++)
         {
-            m_data.emplace(m_data.begin(), 0.0);
+            field.emplace(field.begin(), 0.0);
         }
         startValue -= bin_diff*m_binWidth;
     }
@@ -121,14 +138,14 @@ bool nucmath::Hist::add(double x, double y, bool expand)
 
     size_t bin = floor((x-startValue)/m_binWidth);
 
-    if(bin < m_data.size())
-        m_data.at(bin) += y;
+    if(bin < field.size())
+        field.at(bin) += y;
     else
     {
         if(expand)
         {
-            m_data.resize(bin+1,0);
-            m_data.at(bin) += y;
+            field.resize(bin+1,0);
+            field.at(bin) += y;
         }
         else
         {
@@ -146,7 +163,7 @@ bool nucmath::Hist::add(double x, double y, bool expand)
 
 double nucmath::Hist::sum() const
 {
-    return std::accumulate(m_data.begin(), m_data.end(), 0);
+    return std::accumulate(field.begin(), field.end(), 0);
 }
 
 double nucmath::Hist::mean() const
@@ -158,11 +175,11 @@ size_t nucmath::Hist::maxBin()
 {
     double maxVal = std::numeric_limits<double>::min();
     size_t max_pos = 0;
-    for(size_t i = 0; i < m_data.size(); i++)
+    for(size_t i = 0; i < field.size(); i++)
     {
-        if(m_data[i] > maxVal)
+        if(field[i] > maxVal)
         {
-            maxVal = m_data[i];
+            maxVal = field[i];
             max_pos = i;
         }
     }
@@ -173,9 +190,9 @@ size_t nucmath::Hist::maxBin()
 size_t nucmath::Hist::meanBin()
 {
     double m = mean();
-    for(size_t i = 0; i < m_data.size(); i++)
+    for(size_t i = 0; i < field.size(); i++)
     {
-        if(m_data[i] >= m)
+        if(field[i] >= m)
         {
             return i;
         }
@@ -229,20 +246,20 @@ bool nucmath::Hist::isChanged(bool leaveChanged)
 
 void nucmath::Hist::truncateZeroBins()
 {
-    if(m_data.size() == 0)
+    if(field.size() == 0)
         return;
 
     // remove zeros on the end of the histogram
-    size_t i = m_data.size()-1;
-    while(i > 1) {if(m_data[i] == 0) break; i--;}
-    size_t remove_counter = m_data.size() - i;
+    size_t i = field.size()-1;
+    while(i > 1) {if(field[i] == 0) break; i--;}
+    size_t remove_counter = field.size() - i;
 //    m_data.erase(std::remove(m_data.begin()+remove_counter, m_data.end(), 0), m_data.end());
 
     i= 0;
-    while(i < m_data.size()) {if(m_data[i] > 0) break; i++;}
+    while(i < field.size()) {if(field[i] > 0) break; i++;}
     if(i != 0)
     {
-        m_data.erase(std::remove(m_data.begin(), m_data.begin()+i, 0), m_data.end());
+        field.erase(std::remove(field.begin(), field.begin()+i, 0), field.end());
         startValue += m_binWidth*i;
     }
 
@@ -251,18 +268,18 @@ void nucmath::Hist::truncateZeroBins()
 
 void nucmath::Hist::getThresholdBorders(double threshold, size_t& left_border, size_t& right_border) const
 {
-    for(size_t i = 0; i < m_data.size(); i++)
+    for(size_t i = 0; i < field.size(); i++)
     {
-        if(m_data.at(i) >= threshold)
+        if(field.at(i) >= threshold)
         {
             left_border = i;
             break;
         }
     }
 
-    for(size_t i = m_data.size(); i > 1; i--)
+    for(size_t i = field.size(); i > 1; i--)
     {
-        if(m_data.at(i-1) >= threshold)
+        if(field.at(i-1) >= threshold)
         {
             right_border = i-1;
             break;
@@ -350,7 +367,7 @@ void nucmath::Hist::fold(Hist& folded,double sigmaResolution)
                     continue;
 
                 integr = normalDistIntegral(0, sigmaResolution, k, k+this->getBinWidth());
-                folded.data()[bin] += m_data[bin]*integr;
+                folded.data()[bin] += field[bin]*integr;
             }
             else
             {
@@ -360,7 +377,7 @@ void nucmath::Hist::fold(Hist& folded,double sigmaResolution)
                     integr = normalDistIntegral(0, sigmaResolution, k-this->getBinWidth()/2.0, k+this->getBinWidth()/2.0);
                     //integr = normalDistIntegral(0, resolution_sigma, k, k+this->getBinWidth());
                     //folded.data()[indx] += m_data[bin]*integr;
-                    folded.add(indx, m_data[bin]*integr);
+                    folded.add(indx, field[bin]*integr);
                 }
             }
 
@@ -394,10 +411,10 @@ double nucmath::Hist::getStartX() const { return startValue; }
 double nucmath::Hist::getBinWidth() const { return m_binWidth; }
 
 
-size_t nucmath::Hist::nBins() const { return m_data.size(); }
+size_t nucmath::Hist::nBins() const { return field.size(); }
 
-std::vector<double>& nucmath::Hist::data()  { return m_data; }
-const std::vector<double>& nucmath::Hist::data() const { return m_data; }
+std::vector<double>& nucmath::Hist::data()  { return field; }
+const std::vector<double>& nucmath::Hist::data() const { return field; }
 
 void nucmath::Hist::save(const std::string& path) const
 {

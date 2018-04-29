@@ -15,14 +15,15 @@ nucmath::Regression::~Regression()
 
 }
 
-// a*x + b
-void nucmath::Regression::linear(const std::vector<std::array<double, 2>> &points, double &a, double&b, double &R2)
+
+nucmath::Regression::LinearRegressionResult nucmath::Regression::linear(const std::vector<std::array<double, 2>> &points)
 {
+    LinearRegressionResult result;
     const double N = points.size();
 
     if(N < 2)
     {
-        std::cout << "linear_regression: at least 2 data points are needed. "<< std::endl;
+        throw std::invalid_argument("Regression::linear: at least 2 data points are needed.");
     }
 
     double sum_y = 0.0, sum_x = 0.0;
@@ -39,28 +40,28 @@ void nucmath::Regression::linear(const std::vector<std::array<double, 2>> &point
 
     const double b_counter = (N*sum_x_y-sum_x*sum_y);
     const double b_denominator = (N*sum_x2 - sum_x*sum_x);
-    if(b_denominator == 0) // TODO: ungenau
+    if(isEqual(b_denominator, 0)) // TODO: ungenau
     {
-        std::cout << "linear_regression: division by 0.";
-        return;
+        throw std::invalid_argument("Regression::linear: division by 0 (b_denominator). check your input data.");
     }
-    a = b_counter/b_denominator;
-    b = (sum_y - a*sum_x)/N;
+    result.a1 = b_counter/b_denominator;
+    result.a0 = (sum_y - result.a1*sum_x)/N;
 
     const double R2_counter = b_counter*b_counter;
     const double R2_denominator = (N*sum_x2 - sum_x*sum_x)*(N*sum_y2 - sum_y*sum_y);
-    if(R2_denominator == 0) // TODO: ungenau
+    if(isEqual(R2_denominator, 0))
     {
-        std::cout << "linear_regression: division by 0.";
-        return;
+        throw std::invalid_argument("Regression::linear: division by 0 (R2_denominator). check your input data.");
     }
-    R2 = R2_counter/R2_denominator;
+    result.r2 = R2_counter/R2_denominator;
+
+    return result;
 }
 
 
-// ax^2 + bx + c
-void nucmath::Regression::quadratic(const std::vector<std::array<double, 2>> &points, double &a, double &b, double &c)
+nucmath::Regression::QuadraticRegressionResult nucmath::Regression::quadratic(const std::vector<std::array<double, 2>> &points)
 {
+    QuadraticRegressionResult result;
     double y_bar = 0.0, x_bar = 0.0;
     double x2_bar = 0.0;
     double x3_bar = 0.0;
@@ -88,13 +89,16 @@ void nucmath::Regression::quadratic(const std::vector<std::array<double, 2>> &po
     y_x2_bar /=N;
     x_y_bar /=N;
 
-    a = ((y_x2_bar-y_bar*x2_bar)*(x2_bar-x_bar*x_bar)-(x_y_bar-y_bar*x_bar)*(x3_bar-x_bar*x2_bar))/
-            ((x4_bar-x2_bar*x2_bar)*(x2_bar-x_bar*x_bar)-(x3_bar-x_bar*x2_bar)*(x3_bar-x_bar*x2_bar));
+    const double sxx = x2_bar - x_bar*x_bar;
+    const double sxy = x_y_bar - x_bar*y_bar;
+    const double sxx2 = x3_bar - x_bar*x2_bar;
+    const double sx2x2 = x4_bar - x2_bar*x2_bar;
+    const double sx2y = y_x2_bar - x2_bar*y_bar;
 
+    result.a2 = (sx2y * sxx - sxy * sxx2) / (sxx * sx2x2 - sxx2 * sxx2);
+    result.a1 = (sxy * sx2x2 - sx2y * sxx2) / (sxx * sx2x2 - sxx2 * sxx2);
+    result.a0 = y_bar - result.a1*x_bar - result.a2*x2_bar;
 
-    b = (x_y_bar-x_bar*y_bar-a*(x3_bar-x_bar*x2_bar)) /
-            (x2_bar-x_bar*x_bar);
-
-    c = y_bar - a*x2_bar - b*x_bar;
+    return result;
 }
 

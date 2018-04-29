@@ -17,14 +17,13 @@
 namespace nucmath
 {
 
-//#define DEBUG_HIST_MSG_OUTPUT 1
-
 class Hist
 {
 public:
     Hist();
     Hist(double startValue, double binWidth, size_t nBins);
     virtual ~Hist();
+
 
     /**
      * @brief Initialize the histogram
@@ -33,7 +32,6 @@ public:
      * @param numberOfBins
      */
     void init(double startPosition, double binWidth, size_t nBins = 100);
-
 
 
     /**
@@ -93,8 +91,8 @@ public:
         m_binWidth = binWidth;
         const double endValue = data.at(data.size()-1).x[xColumn]+xWidth/2.0;
         const size_t numOfBins = ceil((endValue-startValue)/binWidth);  // round up
-        m_data.clear();
-        m_data.resize(numOfBins,0);
+        field.clear();
+        field.resize(numOfBins,0);
 
 
         for(size_t i = 0; i < data.size();i++)
@@ -247,10 +245,19 @@ public:
 
 	void clear();
 
+    /**
+    * @brief Get Cumulative Distribution Function
+    *
+    */
+    nucmath::Hist getCFD();
+
 
     std::vector<double>& data();
     const std::vector<double>& data() const;
     std::pair<double,double> data(size_t bin) const;
+
+    std::vector<double>::iterator begin() { return field.begin(); }
+    std::vector<double>::iterator end() { return field.end(); }
 
     const Hist& getCopy() const { return *this; }
     void setCopy(const Hist &hist);
@@ -259,8 +266,8 @@ public:
 
 private:
 
-    std::vector<double> m_data;     //! Histogram data
-    double m_binWidth;              //! The width of on bin.
+    std::vector<double> field;     //! Histogram data
+    double m_binWidth;             //! The width of on bin.
 
 
     /**

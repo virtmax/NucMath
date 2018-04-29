@@ -1,6 +1,8 @@
 #ifndef MINIMIZER_RANDOM_H
 #define MINIMIZER_RANDOM_H
 
+#include <random>
+
 template <size_t N>
 double random_optimization(std::function<double (const std::array<double, N> &)> chi2func,
                            const std::array<double, N> &initial_p,

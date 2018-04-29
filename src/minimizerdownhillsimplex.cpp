@@ -275,11 +275,10 @@ double nucmath::downhill_simplex_optimization(FUNC2MIN opt_func,
 //            std::cout << std::endl;
 
             // minimum der regressionsparabel als möglichen besten punkt anschauen
-            double a,b,c;   // zu bestimmende parametriesierung der parabel
-			regression.quadratic(par_variations, a, b, c);
+            const auto& regres = regression.quadratic(par_variations);
             if(a > 0)
             {
-                const double xs = -b/(2*a);         // scheitelpunkt
+                const double xs = -regres.a1/(2*regres.a0);         // scheitelpunkt
                 variationPoint.p[j] = xs;
                 considerConstrains(variationPoint.p);
                 variationPoint.fp = opt_func(variationPoint.p);
@@ -324,17 +323,16 @@ double nucmath::downhill_simplex_optimization(FUNC2MIN opt_func,
     for (size_t j = 0; j < N; j++)
     {
         // Eine quadratiche Funktion an die Datenpunkte anpassen
-        double a,b,c;
-		regression.quadratic(variations.at(j), a, b, c);
+        const auto& regres = regression.quadratic(variations.at(j));
 //        std::cout << "a=" << a << std::endl<< "b=" << b << std::endl<< "c=" << c << std::endl;
 
-        if(a > 0)   // parabel nach oben geöffnet
+        if(regres.a2 > 0)   // parabel nach oben geöffnet
         {
 
             // 1 für sqrt(1)=1 sigma abweichung, 4 für sqrt(4)=2 sigma, 9 für sqrt(9)=3 sigma
             const double sigma = 1;
             // double x1 = xs - sqrt(sigma/a);
-            result_sigma[j] = sqrt(sigma/a);
+            result_sigma[j] = sqrt(sigma/regres.a2);
         }
         else
         {

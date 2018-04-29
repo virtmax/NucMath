@@ -1,6 +1,6 @@
 
 
-#pragma once
+
 
 #include <array>
 #include <vector>
@@ -8,6 +8,8 @@
 #include <chrono>
 
 #include "constants.h"
+
+#pragma once
 
 namespace nucmath
 {

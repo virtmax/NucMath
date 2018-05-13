@@ -7,7 +7,7 @@ before_install:
 - sudo apt-get -qq update
 
 install:
-- sudo apt-get -qq install gcc-7 g++-7 ruby git
+- sudo apt-get -qq install gcc-7 g++-7 ruby git lcov
 - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
 - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 90
 - gem install coveralls-lcov

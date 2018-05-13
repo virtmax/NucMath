@@ -220,7 +220,7 @@ public:
      *        If the are many bins with the same value, the first one counts.
      * @return
      */
-    size_t maxBin();
+    size_t maxBin() const;
 
 
     size_t meanBin();
@@ -241,6 +241,12 @@ public:
      */
     bool isChanged(bool leaveChanged = false);
 
+    /**
+     * @brief Set changed status manually.
+     * @see isChanged
+     */
+    void setChanged();
+
     void truncateZeroBins();
 
 	void clear();
@@ -251,10 +257,22 @@ public:
     */
     nucmath::Hist getCFD();
 
+    nucmath::Hist& normalizeArea();
+    nucmath::Hist& normalizeToMax(double max);
+
+    size_t bin(double x) const;
+
+    void fill(double x);
 
     std::vector<double>& data();
     const std::vector<double>& data() const;
-    std::pair<double,double> data(size_t bin) const;
+    std::pair<double, double> data(size_t bin) const;
+
+    std::pair<double, double> dataFromX(double x) const;
+
+    Hist operator* (const double factor) const;
+
+    std::pair<double, double> getRange() const;
 
     std::vector<double>::iterator begin() { return field.begin(); }
     std::vector<double>::iterator end() { return field.end(); }

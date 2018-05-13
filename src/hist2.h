@@ -44,9 +44,13 @@ public:
      */
     std::string getName() const { return name; }
 
-    std::tuple<double, double, double> data(size_t bin);
+    std::tuple<double, double, double> data(size_t bin) const;
 
     bool isChanged(bool leaveChanged);
+
+    std::pair<double, double> getRangeX() const;
+    std::pair<double, double> getRangeY() const;
+    std::tuple<double, double, double, double> getRange() const;
 
 private:
     std::vector<std::vector<double>> field;     //! Histogram data

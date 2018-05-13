@@ -109,3 +109,13 @@ int nucmath::sign(double x)
 			return 1;
 	}
 }
+
+double nucmath::rad2deg(double angle_rad)
+{
+    return 57.2957795130823*angle_rad;
+}
+
+double nucmath::deg2rad(double angle_deg)
+{
+    return 0.0174532925199439*angle_deg;
+}

@@ -54,24 +54,23 @@ bool nucmath::Hist2::add(double x, double y, double z, bool expand)
     }
     changed = true;
 
+
     // expand to smaller y values
     if(y < startPosY && expand)
     {
         size_t binsToAdd = static_cast<size_t>(ceil((startPosY-y)/binWidthY));
-        for(size_t i = 0; i < binsToAdd; i++)
-        {
-            field.emplace(field.begin(), std::vector<double>());
-        }
-        startPosY = -binWidthY*binsToAdd;
+        size_t binsXtoFill = (field.size() > 0) ? field.at(0).size() : 0;
+        field.insert(field.begin(), binsToAdd, std::vector<double>(binsXtoFill, 0));
+        startPosY -= binWidthY*binsToAdd;
     }
 
     size_t binY = floor((y-startPosY)/binWidthY);
-    size_t binX = floor((x-startPosX)/binWidthX);
 
     // expand to bigger y values
     if(binY >= field.size() && expand)
     {
-        field.resize(binY+1, std::vector<double>());
+        size_t binsXtoFill = (field.size() > 0) ? field.at(0).size() : 0;
+        field.resize(binY+1, std::vector<double>(binsXtoFill, 0.0));
     }
 
     // expand to smaller x values
@@ -80,16 +79,15 @@ bool nucmath::Hist2::add(double x, double y, double z, bool expand)
         size_t binsToAdd = ceil((startPosX-x)/binWidthX);
         for(size_t j = 0; j < field.size(); j++)
         {
-            for(size_t i = 0; i < binsToAdd; i++)
-            {
-                field.at(j).emplace(field.at(j).begin(), 0.0);
-            }
+            field.at(j).insert(field.at(j).begin(), binsToAdd, 0.0);
         }
-        startPosX = -binWidthX*binsToAdd;
+        startPosX -= binWidthX*binsToAdd;
     }
 
+    size_t binX = floor((x-startPosX)/binWidthX);
+
     // expand to bigger x values
-    if(binX >= field.at(0).size() && expand)
+    if(field.size()> 0 && binX >= field.at(0).size() && expand)
     {
         for(size_t j = 0; j < field.size(); j++)
         {
@@ -102,6 +100,7 @@ bool nucmath::Hist2::add(double x, double y, double z, bool expand)
     else
         return false;
 
+
     return true;
 }
 
@@ -112,7 +111,7 @@ size_t nucmath::Hist2::nBins() const
     return 0;
 }
 
-std::tuple<double, double, double> nucmath::Hist2::data(size_t bin)
+std::tuple<double, double, double> nucmath::Hist2::data(size_t bin) const
 {
     if(field.size() == 0 || field.at(0).size() == 0)
         throw std::invalid_argument("Hist2::data(size_t bin): the histogram is empty");
@@ -121,8 +120,8 @@ std::tuple<double, double, double> nucmath::Hist2::data(size_t bin)
     size_t binY = (bin-binX)/field.at(0).size();
 
     if(binY < field.size() && binX < field.at(binY).size())
-        return std::tuple<double, double, double>(startPosX+binX*binWidthX,
-                                                  startPosY+binY*binWidthY, field.at(binY).at(binX));
+        return std::tuple<double, double, double>(startPosX+binX*binWidthX+binWidthX/2.0,
+                                                  startPosY+binY*binWidthY+binWidthY/2.0, field.at(binY).at(binX));
     else
         throw std::invalid_argument("Hist2::data(size_t binX, size_t binY): requested bins are outside the data size");
 
@@ -133,6 +132,22 @@ bool nucmath::Hist2::isChanged(bool leaveChanged)
     bool temp = changed;
     changed = (leaveChanged==true) ? true : false;
     return temp;
+}
+
+std::pair<double, double> nucmath::Hist2::getRangeX() const
+{
+    return {startPosX, startPosX + (field.size()>0 ? field.at(0).size()+1 : 0)*binWidthX};
+}
+
+std::pair<double, double> nucmath::Hist2::getRangeY() const
+{
+    return {startPosY, startPosY + (field.size()+1)*binWidthY};
+}
+
+std::tuple<double, double, double, double> nucmath::Hist2::getRange() const
+{
+    return {startPosX, startPosX + (field.size()>0 ? field.at(0).size()+1 : 0)*binWidthX,
+                startPosY, startPosY + (field.size()+1)*binWidthY};
 }
 
 void nucmath::Hist2::setName(const std::string &name)

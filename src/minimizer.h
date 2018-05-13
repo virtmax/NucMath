@@ -32,7 +32,7 @@ public:
     void setNumberOfSeedPoints(size_t number_of_seed_points);
 
    // TODO: void setDataUncertainty()
-    void setModelFunction(MODELFUNC modelFunction);
+    void setModelFunction(MODELFUNC &modelFunction);
     void setInitialPointsAndConstrains(const std::vector< std::array<double,3> > &initial_p);
 
     void setParameterNames(std::vector<std::string> names);

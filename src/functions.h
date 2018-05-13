@@ -68,5 +68,6 @@ namespace nucmath
 
 	int sign(double x);
 
-	
+    double rad2deg(double angle_rad);
+    double deg2rad(double angle_deg);
 }

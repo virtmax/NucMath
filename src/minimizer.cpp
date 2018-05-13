@@ -23,7 +23,7 @@ void Minimizer::setData(const std::vector<double> &x, const std::vector<double> 
     this->y = y;
 }
 
-void Minimizer::setModelFunction(MODELFUNC modelFunction)
+void Minimizer::setModelFunction(MODELFUNC &modelFunction)
 {
     func2min = [&](const std::vector<double> &p)
     {

@@ -56,6 +56,41 @@ nucmath::Hist nucmath::Hist::getCFD()
     return cfd;
 }
 
+nucmath::Hist& nucmath::Hist::normalizeArea()
+{
+    const double s = this->sum();
+    for(size_t i = 0; i < field.size(); i++)
+    {
+        field[i] /= s;
+    }
+
+    return *this;
+}
+
+nucmath::Hist& nucmath::Hist::normalizeToMax(double max)
+{
+    const double hm = this->max();
+    for(size_t i = 0; i < field.size(); i++)
+    {
+        field[i] *= (max/hm);
+    }
+
+    return *this;
+}
+
+size_t nucmath::Hist::bin(double x) const
+{
+    if(x>=startValue && x < startValue + field.size()*m_binWidth)
+        return floor((x-startValue)/m_binWidth);
+    else
+        throw std::invalid_argument("Hist::bin(double x): x is outside the data range.");
+}
+
+void nucmath::Hist::fill(double x)
+{
+    field.assign(field.size(), x);
+}
+
 nucmath::Hist& nucmath::Hist::operator=(const nucmath::Hist & hist2d)
 {
     clear();
@@ -77,6 +112,26 @@ std::pair<double, double> nucmath::Hist::data(size_t bin) const
         return std::pair<double, double>(startValue+m_binWidth*bin, field.at(bin));
     else
         throw std::out_of_range("nucmath::Hist::data(std::size_t bin): bin="+std::to_string(bin));
+}
+
+std::pair<double, double> nucmath::Hist::dataFromX(double x) const
+{
+    return data(bin(x));
+}
+
+nucmath::Hist nucmath::Hist::operator* (const double factor) const
+{
+    Hist hist = *this;
+    for(double &v : hist)
+    {
+        v *= factor;
+    }
+    return hist;
+}
+
+std::pair<double, double> nucmath::Hist::getRange() const
+{
+    return std::pair<double, double>(startValue, startValue+m_binWidth*field.size());
 }
 
 void nucmath::Hist::setCopy(const nucmath::Hist &hist)
@@ -171,7 +226,7 @@ double nucmath::Hist::mean() const
     return sum()/nBins();
 }
 
-size_t nucmath::Hist::maxBin()
+size_t nucmath::Hist::maxBin() const
 {
     double maxVal = std::numeric_limits<double>::min();
     size_t max_pos = 0;
@@ -200,48 +255,17 @@ size_t nucmath::Hist::meanBin()
 
     return std::numeric_limits<size_t>::quiet_NaN();
 }
-/*
-double nucmath::Hist::mean_x() const
-{
-    if(m_data.size()==0)
-    {
-        std::cout << "Hist::mean: size == 0. " << std::endl;
-        return std::numeric_limits<double>::quiet_NaN();
-    }
-
-    double s = 0;
-    for(size_t i = 0; i < m_data.size(); i++)
-    {
-        s+= m_data[i]*(startValue+m_binWidth*i);
-    }
-
-    return s/sum();
-}
-*/
-/*
-double nucmath::Hist::standardDeviation() const
-{
-    if(m_data.size()<2)
-        return 0.0;
-    else
-    {
-        double mb = mean_x();
-        double var = 0;
-        for(size_t i = 0; i < m_data.size(); i++)
-        {
-            var+= ((m_startX+m_binWidth*i)-mb)*((m_startX+m_binWidth*i)-mb);
-        }
-
-        return std::sqrt(var/(m_data.size()*(m_data.size()-1.0)));
-    }
-}
-*/
 
 bool nucmath::Hist::isChanged(bool leaveChanged)
 {
     bool temp = changed;
     changed = (leaveChanged==true) ? true : false;
     return temp;
+}
+
+void nucmath::Hist::setChanged()
+{
+    changed = true;
 }
 
 void nucmath::Hist::truncateZeroBins()

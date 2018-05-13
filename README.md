@@ -1,5 +1,7 @@
 # NucMath
-NucMath (pron: nuke math) is a collection of math classes and functions. 
+NucMath (pron: nuke math) is a collection of math classes and functions.
+
+Don't Try This at Home
 
 #### License
 MIT (see LICENSE file)

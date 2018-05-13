@@ -46,14 +46,12 @@ nucmath::Regression::LinearRegressionResult nucmath::Regression::linear(const st
     }
     result.a1 = b_counter/b_denominator;
     result.a0 = (sum_y - result.a1*sum_x)/N;
+    result.r2 = 0;
 
     const double R2_counter = b_counter*b_counter;
     const double R2_denominator = (N*sum_x2 - sum_x*sum_x)*(N*sum_y2 - sum_y*sum_y);
-    if(isEqual(R2_denominator, 0))
-    {
-        throw std::invalid_argument("Regression::linear: division by 0 (R2_denominator). check your input data.");
-    }
-    result.r2 = R2_counter/R2_denominator;
+    if(!isEqual(R2_denominator, 0))
+        result.r2 = R2_counter/R2_denominator;
 
     return result;
 }

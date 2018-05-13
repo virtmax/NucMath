@@ -2,11 +2,27 @@ language: cpp
 compiler: g++
 
 before_install:
-  - pip install --user cpp-coveralls
+ # for gcc with C++11 support
+- sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test 
+- sudo apt-get -qq update
+
+install:
+- sudo apt-get -qq install gcc-7 g++-7 ruby git
+- sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90 \
+- sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 90
+- gem install coveralls-lcov
+
+before_script:
+- lcov --directory . --zerocounters
 
 script:
-  cmake .
-
+- wget https://raw.githubusercontent.com/CatchOrg/Catch2/master/single_include/catch.hpp
+- cmake .
+- make
+- ./NucMath
 
 after_success:
-    - coveralls
+- lcov --directory . --capture --output-file coverage.info
+- lcov --remove coverage.info 'tests/*' '/usr/*' --output-file coverage.info
+- lcov --list coverage.info
+- coveralls-lcov coverage.info

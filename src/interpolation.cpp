@@ -19,7 +19,7 @@ Interpolation::~Interpolation()
 
 std::vector<std::pair<double, double>> Interpolation::LinearInterpolation()
 {
-    // Liste mit m und b für die lineare Gleichung zwischen zwei Punkten
+    // Liste mit m und b fÃ¼r die lineare Gleichung zwischen zwei Punkten
     // f(x) = m*x + b
     std::vector<std::pair<double, double>> param_list;
 
@@ -36,7 +36,7 @@ std::vector<std::pair<double, double>> Interpolation::LinearInterpolation()
 
 std::vector<std::pair<double, double>> Interpolation::SteffenInterpolation()
 {
-    // Liste mit m und b für die lineare Gleichung zwischen zwei Punkten
+    // Liste mit m und b fÃ¼r die lineare Gleichung zwischen zwei Punkten
     // f(x) = m*x + b
     std::vector<std::pair<double, double>> param_list;
 

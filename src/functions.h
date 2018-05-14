@@ -11,11 +11,11 @@
 namespace nucmath
 {
 /*
-    Model: A*exp(-(x-µ)^2 / (2*sigma^2)) / sqrt(2*Pi*sigma^2)
+    Model: A*exp(-(x-Âµ)^2 / (2*sigma^2)) / sqrt(2*Pi*sigma^2)
 
     p - Array with model parameters
     0 = A
-    1 = µ
+    1 = Âµ
     2 = sigma
 
     x - parameter

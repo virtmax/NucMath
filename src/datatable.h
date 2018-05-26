@@ -4,8 +4,6 @@
 
  */
 
-
-
 #include <string>
 #include <vector>
 #include <iostream>
@@ -15,6 +13,7 @@
 #include <regex>
 #include <array>
 #include <cmath>
+#include <limits>
 #include <math.h>
 
 
@@ -22,162 +21,98 @@
 #include "integration.h"
 #include "stringoperations.h"
 
+#include "tablerow.h"
 
 #pragma once
 
 namespace nucmath
 {
 
-    enum class DATATABLEFORMAT { _Unknown, TryAutomatic, OneColumn, TwoColumn, MathematicaTable2 };
+enum class DATATABLEFORMAT {_Unknown, Standard, MathematicaTable2};
+
+class ColumnProperties
+{
+public:
+    std::string title;
+
+    double binWidth;
+
+    double min;
+    double max;
+};
+
+
+class DataTable
+{
+private:
+
+    size_t nColumns;
+
+    std::vector<TableRow> m_dataTableOriginal;
+    std::vector<TableRow> m_dataTable;
+    std::vector<ColumnProperties> m_columnProp;
+
+    DATATABLEFORMAT format;
+public:
+    DataTable(size_t columns = 2);
+    DataTable(const std::vector<TableRow>& dataTable);
+    ~DataTable();
+
+    bool load(const std::string &file);
+    bool save(const std::string &file);
+
+    void addRow(const TableRow& row);
+    void addRow(const std::vector<double> &row);
+
+    void mul(double factor, size_t column);
+    void add(double shift, size_t column);
+
+
+    void setNumOfColumns(size_t columns, double defaultValue = 0.0);
+    void setNumOfRows(size_t rows, double defaultValue = 0.0);
+    void reset();
+
+    // Faltet die Daten mit der Normalverteilung
+    void fold(DataTable& folded, float resolution, size_t column) const;
+
+    double calcSumOfSquares(const DataTable& hist, size_t column) const;
+    double calcSumOfSquares(const DataTable& hist, size_t column, double beginCh, double endCh) const;
+
+    double getMax(size_t column) const;
+    double getMin(size_t column) const;
+
+    void calcMaxMin();
+    void calcMaxMin(size_t column);
+
+    void sort(size_t column);
+
+    double getSum(size_t column);
+
+    size_t getNumberOfColumns() const { return nColumns; }
+    size_t getNumberOfRows() const { return m_dataTable.size(); }
+
+    const TableRow& operator[](size_t row) const;
+    TableRow& operator[](size_t row);
+
+public:
+    const std::vector<TableRow>& getData() const { return m_dataTable; }
+    std::vector<TableRow>& getData() { return m_dataTable; }
+
+private:
+
+    void updateStatistics(size_t newRowIndex);
 
     /**
-     *  Definition of a row inside the table
-     */
-    template<size_t nColumns>
-	class TableRow
-	{
-	public:
-        TableRow() { for(size_t i = 0; i < nColumns; i++) x[i] = 0.0; }
-        TableRow(const TableRow& data) { for (size_t i = 0; i < nColumns; i++) { this->x[i] = data.x[i]; } }
-
-        double x[nColumns];
-
-        /**
-         * @brief Return the row values as a string.
-         * @return
-         */
-        std::string str()
-		{
-			std::string s = "";
-            for (size_t i = 0; i < nColumns; i++)
-			{
-                s.append(std::to_string(x[i]).c_str()).append("\t");
-			}
-			return s;
-		}
-
-        friend std::ostream& operator << (std::ostream& os, const TableRow& tablerow)
-		{
-            for (size_t i = 0; i < nColumns; i++)
-			{
-                os << tablerow.x[i] << "\t";
-			}
-            return os;
-		}
-
-
-        /**
-         * @brief multiply all elements inside the row with a @param factor.
-         * @param factor
-         * @return
-         */
-		TableRow operator*(double factor)
-		{
-			TableRow result;
-            for (size_t i = 0; i < nColumns; i++)
-			{
-				result.x[i] = x[i] * factor;
-			}
-			return result;
-		}
-
-		TableRow & operator+=(const TableRow& row)
-		{
-            for (size_t i = 0; i < nColumns; i++)
-			{
-				x[i] += row.x[i];
-			}
-
-			return *this;
-		}
-	};
-
-
-	class ColumnProperties
-	{
-	public:
-		std::string title;
-
-		double binWidth;
-
-		double min;
-		double max;
-	};
-
-
-    template<size_t nColumns>
-	class DataTable
-	{
-	private:
-
-        typedef TableRow<nColumns> TABLEROW;
-
-        std::vector<TABLEROW> m_dataTableOriginal;
-        std::vector<TABLEROW> m_dataTable;
-        std::array<ColumnProperties, nColumns> m_columnProp;
-
-	public:
-		DataTable();
-        DataTable(const std::vector<TABLEROW>& dataTable);
-		DataTable(size_t columns);
-
-		~DataTable();
-
-        bool load(const std::string &file, DATATABLEFORMAT format);
-        bool save(const std::string &file);
-
-
-
-        void addRow(const TABLEROW &row);
-
-
-
-		void multiply(double factor, size_t column);
-        void add(double shift, size_t column);
-
-
-		void setSize(size_t channels);
-		void clear();
-
-		// Faltet die Daten mit der Normalverteilung
-		void fold(DataTable& folded, float resolution, size_t column) const;
-
-
-
-        double calcSumOfSquares(const DataTable& hist, size_t column) const;
-        double calcSumOfSquares(const DataTable& hist, size_t column, double beginCh, double endCh) const;
-
-
-		double getMax(size_t column) const;
-		double getMin(size_t column) const;
-
-		void calcMaxMin();
-		void calcMaxMin(size_t column);
-
-		void sort(size_t column);
-
-    //    void getHist(size_t columnToRebin, size_t columnWithValues, double binWidth,  Hist2d& hist);
-
-		double getSum(size_t column);
-
-	public:
-        const std::vector<TABLEROW>& getData() const { return m_dataTable; };
-        std::vector<TABLEROW>& getData() { return m_dataTable; };
-
-        const std::vector<TABLEROW> getData(double binSize, size_t rowIndxToResample, double oldBinWidth = -1.0) const;
-
-	private:
-
-
-        /**
          * @brief Comparator for the std::sort function.
          */
-		struct sort_comparator
-		{
-			sort_comparator(size_t column){ this->column = column; }
-            bool operator()(const TABLEROW &a, const TABLEROW &b) { return (a.x[column] < b.x[column]); }
-			size_t column;
-		};
-	};
+    struct sort_comparator
+    {
+        sort_comparator(size_t column){ this->column = column; }
+        bool operator()(const TableRow &a, const TableRow &b) { return (a.data[column] < b.data[column]); }
+        size_t column;
+    };
+
+    bool changed;
+};
 
 }

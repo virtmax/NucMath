@@ -53,21 +53,20 @@ public:
      * @param xWidth
      * @param binWidth
      */
-    template <size_t nColumns>
-    bool create(DataTable<nColumns> &datatable, size_t column, double binWidth)
+    bool create(DataTable &datatable, size_t column, double binWidth)
     {
-        if(column >= nColumns)
+        if(column >= datatable.getNumberOfColumns())
             return false;
 
         auto data = datatable.getData();
         if(data.size() == 0)
             return false;
 
-        init(data.at(0).x[column], binWidth, 8);
+        init(data.at(0)[column], binWidth, 8);
 
         for(size_t i = 0; i < data.size(); i++)
         {
-            add(data.at(i).x[column], 1, true);
+            add(data.at(i)[column], 1, true);
         }
     }
 
@@ -76,10 +75,9 @@ public:
      *  @brief: Create a Histogram from a histogram contained inside the DataTable container.
      *
      */
-    template <size_t nColumns>
-    bool create(DataTable<nColumns> &datatable, size_t xColumn, size_t yColumn, double xWidth, double binWidth)
+    bool create(DataTable &datatable, size_t xColumn, size_t yColumn, double xWidth, double binWidth)
     {
-        if(xColumn >= nColumns || yColumn >= nColumns)
+        if(xColumn >= datatable.getNumberOfColumns() || yColumn >= datatable.getNumberOfColumns())
             return false;
 
         auto data = datatable.getData();
@@ -87,9 +85,9 @@ public:
             return false;
 
         size_t binNr = 0;
-        startValue = data.at(0).x[xColumn]- xWidth/2.0;
+        startValue = data.at(0)[xColumn]- xWidth/2.0;
         m_binWidth = binWidth;
-        const double endValue = data.at(data.size()-1).x[xColumn]+xWidth/2.0;
+        const double endValue = data.at(data.size()-1)[xColumn]+xWidth/2.0;
         const size_t numOfBins = ceil((endValue-startValue)/binWidth);  // round up
         field.clear();
         field.resize(numOfBins,0);
@@ -98,20 +96,20 @@ public:
         for(size_t i = 0; i < data.size();i++)
         {
             double newBinValue = 0;
-            const double xi = data.at(i).x[xColumn];
+            const double xi = data.at(i)[xColumn];
             binNr = floor((xi - xWidth/2.0 - startValue)/binWidth);
 
             // value fit completely into the bin width
             if(xi+xWidth/2.0 <= startValue + binWidth*(binNr+1))
             {
-                newBinValue += data.at(i).x[yColumn];
+                newBinValue += data.at(i)[yColumn];
             }
             else if(xi+xWidth/2.0 > startValue + binWidth*(binNr+1)
                     && xi+xWidth/2.0 <= startValue + binWidth*(binNr+2))
             {
                 double RestFraction = ((xi+xWidth/2.0)-(startValue + binWidth*(binNr+1)))/xWidth;
-                newBinValue += data.at(i).x[yColumn]*(1.0-RestFraction);
-                double restF = data.at(i).x[yColumn]*RestFraction;
+                newBinValue += data.at(i)[yColumn]*(1.0-RestFraction);
+                double restF = data.at(i)[yColumn]*RestFraction;
                 add(binNr+1, restF, true);
             }
             else

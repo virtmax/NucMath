@@ -10,7 +10,6 @@ template <typename T>
 class Vec2
 {
 public:
-	// Variablen
 	union
 	{
 		struct

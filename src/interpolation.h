@@ -18,12 +18,12 @@ public:
 
     void interpolate(InterpolationMode mode);
 
-    void setData(const DataTable<2>& data);
+    void setData(const DataTable& data);
     void setData(const std::vector<double>& data);
 
 private:
 
-    DataTable<2> m_dataTable;
+    DataTable m_dataTable;
     std::vector<std::pair<double, double>> m_data;
 
     InterpolationMode m_mode;

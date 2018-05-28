@@ -12,6 +12,8 @@ nucmath::DataTable::DataTable(size_t columns)
 
 DataTable::DataTable(const std::vector<TableRow> &dataTable)
 {
+    reset();
+
     if(dataTable.size() != 0)
         setNumOfColumns(dataTable.at(0).getNumOfColumns());
 
@@ -92,9 +94,14 @@ void nucmath::DataTable::reset()
     m_dataTable.clear();
     m_columnProp.clear();
     changed = true;
+    header = "";
     nColumns = 0;
 }
 
+void DataTable::setHeader(std::string str)
+{
+    header = str;
+}
 
 bool DataTable::load(const std::string& file)
 {
@@ -119,10 +126,12 @@ bool DataTable::load(const std::string& file)
     {
         std::getline(in, line);
 
-        if(line.size() == 0)
+        line.erase(0, line.find_first_not_of(" \t\n\r\f\v"));   // trim leading whitespaces
+
+        if(line.size() == 0 || line.at(0) == '#' || line.at(0) == '-' || line.at(0) == '_')
             continue;
 
-        if(lineNr == 0)
+        if(format == DATATABLEFORMAT::_Unknown)
         {
             if(std::regex_search(line, match, patternStandardTable))
             {
@@ -183,6 +192,15 @@ bool DataTable::save(const std::string &file)
 
     if(out.is_open())
     {
+        if(!header.empty())
+        {
+            const auto& tokens = tokenize(header, {'\n'});
+            for(const auto& token : tokens)
+            {
+                out << "# " << token << std::endl;
+            }
+        }
+
         for(size_t i = 0; i < m_dataTable.size(); ++i)
         {
             for(size_t k = 0; k < nColumns; ++k)
@@ -190,11 +208,11 @@ bool DataTable::save(const std::string &file)
                 out << m_dataTable[i].data[k];
 
                 if(k+1 != nColumns)
-                    out<< " ";
+                    out << " ";
             }
 
             if(i+1 != m_dataTable.size())
-                out<< std::endl;
+                out << std::endl;
         }
     }
 

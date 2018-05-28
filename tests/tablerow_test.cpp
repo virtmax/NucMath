@@ -22,6 +22,16 @@ TEST_CASE("TableRow")
         REQUIRE(row.getMax() == Approx(4.84e43));
     }
 
+    SECTION("create with constructor 3")
+    {
+        nucmath::TableRow row2({1, -4e7, 5, 7, 4.84e43});
+        nucmath::TableRow row(row2);
+
+        REQUIRE(row.getNumOfColumns() == 5);
+        REQUIRE(row.getMin() == Approx(-4e7));
+        REQUIRE(row.getMax() == Approx(4.84e43));
+    }
+
     SECTION("setNumOfColumns")
     {
         nucmath::TableRow row(0);

@@ -1,4 +1,4 @@
-#include "../../catch.hpp"
+#include "../catch.hpp"
 
 #include "matrix.h"
 
@@ -71,7 +71,6 @@ TEST_CASE("Matrix")
         nucmath::Matrix<double> mat(2, 3, {3, 2, 1,
                                            1, 0, 2});
         nucmath::Vector<double> vec({1, 0, 4});
-
 
         const auto& res = mat*vec;
 

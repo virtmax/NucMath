@@ -22,6 +22,19 @@ TEST_CASE("Matrix")
         REQUIRE(mat1 != mat3);
     }
 
+    SECTION("operator = (const Matrix& mat)")
+    {
+        nucmath::Matrix mat2 = mat;
+        REQUIRE(mat == mat2);
+    }
+
+    SECTION("operator = (const std::vector<std::vector<T>>& elements)")
+    {
+        nucmath::Matrix<double> mat2 =  {{{1.0,2.0,3.0},
+                                        {4.0,5.0,6.0}}};
+        REQUIRE(mat == mat2);
+    }
+
     SECTION("operator * 1")
     {
         nucmath::Matrix<double> mat1(1, 1, {-0.5});

@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <array>
 #include <vector>
+#include <string>
 #include <stdexcept>
 
 #include "utils.h"
@@ -18,8 +19,10 @@ template <typename T>
 class Matrix
 {
 public:
+    Matrix();
     Matrix(size_t nRows, size_t nColumns);
     Matrix(size_t nRows, size_t nColumns, const std::vector<T>& elements);
+    Matrix(const std::vector<std::vector<T>>& elements);
 public:
 
     size_t rows() const;
@@ -27,6 +30,9 @@ public:
 
     const T& operator() (size_t row, size_t column) const;
     T& operator() (size_t row, size_t column);
+
+    Matrix& operator = (const Matrix& mat);
+    Matrix& operator = (const std::vector<std::vector<T>>& elements);
 
     const Matrix operator * (const Matrix& mat) const;
     Vector<T> operator * (const Vector<T>& vec) const;
@@ -36,12 +42,19 @@ public:
 
     std::string str() const;
 
+    nucmath::Matrix<T> &transpose();
+
 private:
     size_t nRows;
     size_t nColumns;
 
     std::vector<double> data;
 };
+}
+
+template<typename T>
+nucmath::Matrix<T>::Matrix()
+{
 }
 
 template<typename T>
@@ -62,6 +75,12 @@ nucmath::Matrix<T>::Matrix(size_t nRows, size_t nColumns, const std::vector<T>& 
     this->nColumns = nColumns;
 
     data = elements;
+}
+
+template<typename T>
+nucmath::Matrix<T>::Matrix(const std::vector<std::vector<T>>& elements)
+{
+    *this = elements;
 }
 
 template<typename T>
@@ -86,6 +105,39 @@ template<typename T>
 T& nucmath::Matrix<T>::operator() (size_t row, size_t column)
 {
     return data[row*nColumns + column];
+}
+
+template<typename T>
+nucmath::Matrix<T>& nucmath::Matrix<T>::operator = (const Matrix& mat)
+{
+    nColumns = mat.columns();
+    nRows = mat.rows();
+    data = mat.data();
+    return *this;
+}
+
+template<typename T>
+nucmath::Matrix<T>& nucmath::Matrix<T>::operator = (const std::vector<std::vector<T>>& elements)
+{
+    if(elements.size() == 0)
+        throw std::invalid_argument("nucmath::Matrix<T>::operator = (const std::vector<std::vector<T>>& elements): "
+                                    "elements list is empty.");
+
+    nRows = elements.size();
+    nColumns = elements.at(0).size();
+
+    for(const auto& row : elements)
+    {
+        if(nColumns != row.size())
+            throw std::invalid_argument("nucmath::Matrix<T>::operator = (const std::vector<std::vector<T>>& elements): "
+                                        "rows should have the same number of columns.");
+        for(const auto& el : row)
+        {
+            data.push_back(el);
+        }
+    }
+
+    return *this;
 }
 
 template<typename T>
@@ -172,4 +224,19 @@ std::string nucmath::Matrix<T>::str() const
         s.append(std::to_string(data[i]));
     }
     return s;
+}
+
+template<typename T>
+nucmath::Matrix<T> &nucmath::Matrix<T>::transpose()
+{
+    std::vector<T> transposed;
+    for(int n = 0; n < nRows*nColumns; n++)
+    {
+        int i = n/nRows;
+        int j = n%nRows;
+        transposed[n] = data[nColumns*j + i];
+    }
+    data = transposed;
+
+    return *this;
 }

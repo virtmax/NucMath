@@ -3,7 +3,10 @@
 
 #pragma once
 
+#include <vector>
+
 #include "utils.h"
+
 
 namespace nucmath
 {
@@ -43,6 +46,8 @@ public:
     bool operator != (const std::vector<T>& vec) const;
 
     double length() const;
+
+    void normalize();
 
 private:
     std::vector<T> data;
@@ -288,4 +293,14 @@ double nucmath::Vector<T>::length() const
     }
 
     return std::sqrt(scalar);
+}
+
+template<typename T>
+void nucmath::Vector<T>::normalize()
+{
+    const double len = length();
+    for(size_t i = 0; i < data.size(); i++)
+    {
+        data[i] /= len;
+    }
 }

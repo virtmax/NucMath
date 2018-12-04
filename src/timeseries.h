@@ -10,41 +10,25 @@ namespace nucmath
 class TimeSeries : public nucmath::Hist
 {
 public:
-    TimeSeries() : Hist()
-    {
-        lastTimeValue = 0;
-		firstTimeValue = 0.0;
-    }
+    TimeSeries();
 
-    void setTimeGranularity(double timeBinWidth)
-    {
-        setBinWidth(timeBinWidth);
-    }
+    void setTimeGranularity(double timeBinWidth);
+    void add(double time, double value);
 
-    void add(double time, double value)
-    {
-		if (firstTimeValue < 0.0)
-		{
-			firstTimeValue = time;
-		}
-		else
-		{
-			double timeStep = lastTimeValue - time;
-			if (timeStep > getBinWidth())
-			{
-				setBinWidth(timeStep);
-			}
-		}
-		Hist::add(time, value);
-       
-		lastTimeValue = time;
-    }
+    std::pair<double, double> data(size_t bin) const;
 
+    double max();
+
+    double min();
+
+    double mean();
 
 private:
 
     double lastTimeValue;
 	double firstTimeValue;
+
+    Hist entriesPerBin;
 };
 
 }

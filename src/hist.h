@@ -22,7 +22,7 @@ class Hist
 public:
     Hist();
     Hist(double startValue, double binWidth, size_t nBins);
-    virtual ~Hist();
+    ~Hist();
 
 
     /**
@@ -68,6 +68,8 @@ public:
         {
             add(data.at(i)[column], 1, true);
         }
+
+        return true;
     }
 
 
@@ -121,6 +123,7 @@ public:
         }
 
         changed = true;
+        return true;
     }
 
 

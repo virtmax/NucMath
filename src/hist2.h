@@ -44,13 +44,35 @@ public:
      */
     std::string getName() const { return name; }
 
+    /**
+    * @brief Get the mean value of all row bins for a given column.
+    * @return
+    */
+    double meanOverColumn(size_t column) const;
+
+    /**
+    * @brief Get the mean value of all column bins for a given row.
+    * @return
+    */
+    double meanOverRow(size_t row) const;
+
+    double& dataref(size_t binX, size_t binY);
+    double& dataref(size_t bin);
+
     std::tuple<double, double, double> data(size_t bin) const;
+    double data(size_t binX, size_t binY) const;
 
     bool isChanged(bool leaveChanged);
 
     std::pair<double, double> getRangeX() const;
     std::pair<double, double> getRangeY() const;
     std::tuple<double, double, double, double> getRange() const;
+
+
+    size_t nBinsX() const;
+    size_t nBinsY() const;
+
+    void save(const std::string& path) const;
 
 private:
     std::vector<std::vector<double>> field;     //! Histogram data

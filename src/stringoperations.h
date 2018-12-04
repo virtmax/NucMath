@@ -9,7 +9,14 @@
 namespace nucmath
 { 
 
-
+    /**
+     * @brief tokenize
+     * @param str
+     * @param delims
+     * @return
+     *
+     * @example tokenize(line, {' ', '\t', '|', ','});
+     */
 	std::vector<std::string> tokenize(const std::string& str, std::vector<char> delims);
 
 

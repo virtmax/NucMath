@@ -125,7 +125,9 @@ nucmath::Matrix<T>& nucmath::Matrix<T>::operator = (const std::vector<std::vecto
 
     nRows = elements.size();
     nColumns = elements.at(0).size();
+    data.resize(nRows*nColumns);
 
+    size_t index = 0;
     for(const auto& row : elements)
     {
         if(nColumns != row.size())
@@ -133,7 +135,7 @@ nucmath::Matrix<T>& nucmath::Matrix<T>::operator = (const std::vector<std::vecto
                                         "rows should have the same number of columns.");
         for(const auto& el : row)
         {
-            data.push_back(el);
+            data[index++] = el;
         }
     }
 

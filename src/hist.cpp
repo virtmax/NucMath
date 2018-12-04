@@ -6,7 +6,6 @@
 nucmath::Hist::Hist()
 {
     clear();
-    changed = true;
 }
 
 nucmath::Hist::Hist(double startValue, double binWidth, size_t nBins)
@@ -449,8 +448,8 @@ void nucmath::Hist::save(const std::string& path) const
     {
         for(size_t i = 0; i < nBins(); i++)
         {
-            auto v = data(i);
-            stream << v.first << "\t" << v.second << std::endl;
+            const auto& [x,y] = data(i);
+            stream << x << "\t" << y << std::endl;
         }
     }
     else

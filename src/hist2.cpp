@@ -111,20 +111,86 @@ size_t nucmath::Hist2::nBins() const
     return 0;
 }
 
+double nucmath::Hist2::meanOverColumn(size_t column) const
+{
+    double sum = 0.0;
+    for(size_t j = 0; j < field.size(); j++)
+    {
+        sum += field.at(j).at(column);
+    }
+    return sum/static_cast<double>(field.size());
+}
+
+double nucmath::Hist2::meanOverRow(size_t row) const
+{
+    double sum = 0.0;
+    for(size_t j = 0; j < field.at(row).size(); j++)
+    {
+        sum += field.at(row).at(j);
+    }
+    return sum/static_cast<double>(field.at(row).size());
+}
+
+double& nucmath::Hist2::dataref(size_t binX, size_t binY)
+{
+    if(field.size() == 0 || field.at(0).size() == 0)
+        throw std::invalid_argument("Hist2::dataref(size_t binX, size_t binY): the histogram is empty");
+    if(field.size()*field.at(0).size() <= binX*binY)
+        throw std::invalid_argument("Hist2::dataref(size_t binX, size_t binY): requested bin is outside the data field.");
+
+    return field.at(binY).at(binX);
+}
+
+double& nucmath::Hist2::dataref(size_t bin)
+{
+    if(field.size() == 0 || field.at(0).size() == 0)
+        throw std::invalid_argument("Hist2::data(size_t bin): the histogram is empty");
+    if(field.size()*field.at(0).size() <= bin)
+        throw std::invalid_argument("Hist2::data(size_t bin): requested bin is outside the data field.");
+
+    size_t rowLen = field.at(0).size();
+    size_t colBin = bin % rowLen;
+    size_t rowBin = (bin-colBin)/rowLen;
+
+    return field.at(rowBin).at(colBin);
+}
+
 std::tuple<double, double, double> nucmath::Hist2::data(size_t bin) const
 {
     if(field.size() == 0 || field.at(0).size() == 0)
         throw std::invalid_argument("Hist2::data(size_t bin): the histogram is empty");
+    if(field.size()*field.at(0).size() <= bin)
+        throw std::invalid_argument("Hist2::data(size_t bin): requested bin is outside the data field.");
 
-    size_t binX = bin % field.at(0).size();
-    size_t binY = (bin-binX)/field.at(0).size();
+    size_t rowLen = field.at(0).size();
+    size_t colLen = field.size();
+    size_t colBin = bin % rowLen;
+    size_t rowBin = (bin-colBin)/rowLen;
 
-    if(binY < field.size() && binX < field.at(binY).size())
-        return std::tuple<double, double, double>(startPosX+binX*binWidthX+binWidthX/2.0,
-                                                  startPosY+binY*binWidthY+binWidthY/2.0, field.at(binY).at(binX));
-    else
-        throw std::invalid_argument("Hist2::data(size_t binX, size_t binY): requested bins are outside the data size");
+    return std::tuple<double, double, double>(startPosX+colBin*binWidthX+binWidthX/2.0,
+                                                  startPosY+rowBin*binWidthY+binWidthY/2.0, field.at(rowBin).at(colBin));
+}
 
+double nucmath::Hist2::data(size_t binX, size_t binY) const
+{
+    if(field.size() == 0 || field.at(0).size() == 0)
+        throw std::invalid_argument("Hist2::dataref(size_t binX, size_t binY): the histogram is empty");
+    if(field.size()*field.at(0).size() <= binX*binY)
+        throw std::invalid_argument("Hist2::dataref(size_t binX, size_t binY): requested bin is outside the data field.");
+
+    return field.at(binY).at(binX);
+}
+
+size_t nucmath::Hist2::nBinsX() const
+{
+    if(field.size() == 0)
+        return 0;
+
+    return field.at(0).size();
+}
+size_t nucmath::Hist2::nBinsY() const
+{
+    return field.size();
 }
 
 bool nucmath::Hist2::isChanged(bool leaveChanged)

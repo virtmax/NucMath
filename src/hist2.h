@@ -17,9 +17,9 @@ class Hist2
 {
 public:
     Hist2();
-    Hist2(double startPosX, double startPosY, double binWidthX, double binWidthY, size_t nBinsX = 100, size_t nBinsY = 100);
+    Hist2(double startPosX, double startPosY, double binWidth, double binHeight, size_t nBinsX = 100, size_t nBinsY = 100);
 
-    void init(double startPosX, double startPosY, double binWidthX, double binWidthY, size_t nBinsX = 100, size_t nBinsY = 100);
+    void init(double startPosX, double startPosY, double binWidth, double binHeight, size_t nBinsX = 100, size_t nBinsY = 100);
 
     bool add(double x, double y, double z=1.0, bool expand=true);
 
@@ -72,11 +72,13 @@ public:
     size_t nBinsX() const;
     size_t nBinsY() const;
 
-    void save(const std::string& path) const;
+    enum FileFormat {List, Array};
+
+    bool save(const std::string& path, FileFormat fileFormat) const;
 
 private:
     std::vector<std::vector<double>> field;     //! Histogram data
-    double binWidthX, binWidthY;                //! The width of on bin.
+    double binWidth, binHeight;                //! The width of on bin.
 
 
     /**

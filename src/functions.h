@@ -61,6 +61,13 @@ double getRandom(double start, double end);
 
 int sign(double x);
 
+double factorial(size_t x);
+
+double binomialCoefficient(size_t n, size_t k);
+
+// binomial Probability mass function
+double binomialPMF(double p, size_t n, size_t k);
+
 double rad2deg(double angle_rad);
 double deg2rad(double angle_deg);
 }

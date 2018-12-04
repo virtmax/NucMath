@@ -110,6 +110,48 @@ int nucmath::sign(double x)
 	}
 }
 
+double nucmath::factorial(size_t x)
+{
+    if(x == 0)
+        return 1.0;
+    else return  x*factorial(x-1);
+}
+
+double nucmath::binomialCoefficient(size_t n, size_t k)
+{
+    if(k == 0 && n == 0)
+        return 1;
+
+    if(n == 0)
+        return 0;
+    else if(k == 0)
+        return 1;
+
+    double K = k;
+    double N = n;
+
+    if(2*k > N)
+        K = N - K;
+
+    double res = 1;
+    for(int64_t i = 1; i <= K; i++)
+        res *= (N - K + i)/i;
+
+    return res;
+}
+
+double nucmath::binomialPMF(double p, size_t n, size_t k)
+{
+    if(k > n)
+        return 0;
+
+    double sum = 0.0;
+    for(size_t i = 0; i <= k; i++)
+        sum += binomialCoefficient(n, i) * std::pow(p, i) * std::pow(1.0-p, n-i);
+
+    return sum;
+}
+
 double nucmath::rad2deg(double angle_rad)
 {
     return 57.2957795130823*angle_rad;

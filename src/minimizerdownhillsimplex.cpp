@@ -14,7 +14,7 @@ double nucmath::downhill_simplex_optimization(FUNC2MIN opt_func,
     const size_t N = initial_p.size();
     const size_t NP = N + 1;
     const double a = 1.0, b = 1.8, c = 0.55, d = 0.5;
-    const double double_max = std::numeric_limits<double>::max();
+    //const double double_max = std::numeric_limits<double>::max();
 
 
     // internal function used to set a proposed optimization point back into the constrained region.

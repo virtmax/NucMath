@@ -3,6 +3,8 @@
 nucmath::Hist2::Hist2()
 {
     clear();
+    binWidth = 1.0;
+    binHeight = 1.0;
 }
 
 nucmath::Hist2::Hist2(double startPosX, double startPosY, double binWidthX, double binWidthY, size_t nBinsX, size_t nBinsY)
@@ -15,19 +17,17 @@ void nucmath::Hist2::clear()
     field.clear();
     startPosX = 0;
     startPosY = 0;
-    binWidth = 1.0;
-    binHeight = 1.0;
     initialized = false;
     changed = true;
 }
 
 void nucmath::Hist2::init(double startPosX, double startPosY, double binWidthX, double binWidthY, size_t nBinsX, size_t nBinsY)
 {
+    field.clear();
     this->startPosX = startPosX;
     this->startPosY = startPosY;
     this->binWidth = binWidthX;
     this->binHeight = binWidthY;
-    field.clear();
 
     for(size_t i = 0; i < nBinsY; i++)
     {

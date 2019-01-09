@@ -50,7 +50,7 @@ std::pair<double, double> nucmath::TimeSeries::data(size_t bin) const
 
 double nucmath::TimeSeries::max()
 {
-    double maxVal = std::numeric_limits<double>::min();
+    double maxVal = std::numeric_limits<double>::lowest();
     for(size_t i = 0; i < nBins(); i++)
     {
         if(data(i).second > maxVal)

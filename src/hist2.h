@@ -68,6 +68,8 @@ public:
     std::pair<double, double> getRangeY() const;
     std::tuple<double, double, double, double> getRange() const;
 
+    double getBinWidth() const { return binWidth;}
+    double getBinHeight() const { return binHeight;}
 
     size_t nBinsX() const;
     size_t nBinsY() const;

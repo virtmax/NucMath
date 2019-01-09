@@ -44,6 +44,7 @@ public:
         if(p2.N == N)
             return this->fp < p2.fp;
         else std::cout<< "dsPoint::operator < (const dsPoint &p2): this->N != ps.N"<<std::endl;
+        return false;
     }
 
     std::vector<double> p;

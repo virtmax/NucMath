@@ -25,7 +25,7 @@ nucmath::TableRow::TableRow(const nucmath::TableRow& row)
 
 void nucmath::TableRow::reset()
 {
-    min = std::numeric_limits<double>::min();
+    min = std::numeric_limits<double>::lowest();
     max = std::numeric_limits<double>::max();
     data.clear();
     changed = true;

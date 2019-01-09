@@ -73,7 +73,7 @@ void DataTable::setNumOfColumns(size_t columns, double defaultValue)
             m_columnProp.push_back(ColumnProperties());
 
         m_columnProp[i].max = std::numeric_limits<double>::max();
-        m_columnProp[i].min = std::numeric_limits<double>::min();
+        m_columnProp[i].min = std::numeric_limits<double>::lowest();
     }
 }
 

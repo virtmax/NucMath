@@ -6,6 +6,7 @@
 nucmath::Hist::Hist()
 {
     clear();
+    binWidth = 1;
 }
 
 nucmath::Hist::Hist(double startValue, double binWidth, size_t nBins)
@@ -19,23 +20,26 @@ nucmath::Hist::~Hist()
 
 }
 
-void nucmath::Hist::init(double startValue, double binWidth, size_t nBins)
+void nucmath::Hist::init(double lowerEdge, double binWidth, size_t nBins)
 {
-    this->startValue = startValue;
-    m_binWidth = binWidth;
     field.clear();
-    field.resize(nBins,0);
+    field.resize(nBins, 0);
     initialized = true;
     changed = true;
+    this->lowerEdge = lowerEdge;
+    this->binWidth = binWidth;
+    hRangeL = lowerEdge;
+    hRangeR = lowerEdge;
 }
 
 void nucmath::Hist::clear()
 {
     field.clear();
-    startValue = 0;
-    m_binWidth = 1;
+    lowerEdge = 0;
     initialized = false;
     changed = true;
+    hRangeL = std::numeric_limits<double>::max();
+    hRangeR = std::numeric_limits<double>::lowest();
 }
 
 nucmath::Hist nucmath::Hist::getCFD()
@@ -79,8 +83,8 @@ nucmath::Hist& nucmath::Hist::normalizeToMax(double max)
 
 size_t nucmath::Hist::bin(double x) const
 {
-    if(x>=startValue && x < startValue + field.size()*m_binWidth)
-        return floor((x-startValue)/m_binWidth);
+    if(x>=lowerEdge && x < lowerEdge + field.size()*binWidth)
+        return floor((x-lowerEdge)/binWidth);
     else
         throw std::invalid_argument("Hist::bin(double x): x is outside the data range.");
 }
@@ -98,8 +102,8 @@ nucmath::Hist& nucmath::Hist::operator=(const nucmath::Hist & hist2d)
         field.push_back(*it);
     }
 
-    startValue = hist2d.getStartX();
-    m_binWidth = hist2d.getBinWidth();
+    lowerEdge = hist2d.getLowestEdge();
+    binWidth = hist2d.getBinWidth();
     changed = true;
 
     return *this;
@@ -108,7 +112,7 @@ nucmath::Hist& nucmath::Hist::operator=(const nucmath::Hist & hist2d)
 std::pair<double, double> nucmath::Hist::data(size_t bin) const
 {
     if(bin < field.size())
-        return std::pair<double, double>(startValue+m_binWidth*bin, field.at(bin));
+        return std::pair<double, double>(lowerEdge+binWidth*bin, field.at(bin));
     else
         throw std::out_of_range("nucmath::Hist::data(std::size_t bin): bin="+std::to_string(bin));
 }
@@ -130,7 +134,7 @@ nucmath::Hist nucmath::Hist::operator* (const double factor) const
 
 std::pair<double, double> nucmath::Hist::getRange() const
 {
-    return std::pair<double, double>(startValue, startValue+m_binWidth*field.size());
+    return std::pair<double, double>(lowerEdge, lowerEdge+binWidth*field.size());
 }
 
 void nucmath::Hist::setCopy(const nucmath::Hist &hist)
@@ -141,7 +145,7 @@ void nucmath::Hist::setCopy(const nucmath::Hist &hist)
 
 double nucmath::Hist::max()
 {
-    double maxVal = std::numeric_limits<double>::min();
+    double maxVal = std::numeric_limits<double>::lowest();
     for(auto it = field.begin(); it !=field.end(); it++)
     {
         maxVal = std::max<double>(maxVal, *it);
@@ -168,9 +172,9 @@ bool nucmath::Hist::add(double x, double y, bool expand)
     if(!initialized)
     {
         if(x>=0)
-            startValue = x - fmod(x, m_binWidth); // value of the first bin
+            lowerEdge = x - fmod(x, binWidth); // value of the first bin
         else
-            startValue = x - fmod(x, m_binWidth) - m_binWidth; // value of the first bin
+            lowerEdge = x - fmod(x, binWidth) - binWidth; // value of the first bin
 
         initialized = true;
     }
@@ -179,27 +183,33 @@ bool nucmath::Hist::add(double x, double y, bool expand)
 
 
     // expand to smaller values
-    if(x < startValue)
+    if(x < lowerEdge)
     {
-        size_t bin_diff = ceil((startValue-x)/m_binWidth);
+        size_t bin_diff = ceil((lowerEdge-x)/binWidth);
         for(size_t i = 0; i < bin_diff; i++)
         {
             field.emplace(field.begin(), 0.0);
         }
-        startValue -= bin_diff*m_binWidth;
+        lowerEdge -= bin_diff*binWidth;
     }
 
 
-    size_t bin = floor((x-startValue)/m_binWidth);
+    size_t bin = floor((x-lowerEdge)/binWidth);
 
     if(bin < field.size())
+    {
         field.at(bin) += y;
+        hRangeL = std::min(hRangeL, x);
+        hRangeR = std::max(hRangeR, x);
+    }
     else
     {
         if(expand)
         {
             field.resize(bin+1,0);
             field.at(bin) += y;
+            hRangeL = std::min(hRangeL, x);
+            hRangeR = std::max(hRangeR, x);
         }
         else
         {
@@ -215,6 +225,18 @@ bool nucmath::Hist::add(double x, double y, bool expand)
     return true;
 }
 
+double nucmath::Hist::centerOfMass()
+{
+    double wmass = 0.0;
+    for(size_t i = 0; i < field.size(); i++)
+    {
+        const auto& [x,y] = data(i);
+        wmass += x*y;
+    }
+    wmass /= sum();
+    return wmass;
+}
+
 double nucmath::Hist::sum() const
 {
     return std::accumulate(field.begin(), field.end(), 0);
@@ -227,7 +249,7 @@ double nucmath::Hist::mean() const
 
 size_t nucmath::Hist::maxBin() const
 {
-    double maxVal = std::numeric_limits<double>::min();
+    double maxVal = std::numeric_limits<double>::lowest();
     size_t max_pos = 0;
     for(size_t i = 0; i < field.size(); i++)
     {
@@ -274,8 +296,8 @@ void nucmath::Hist::truncateZeroBins()
 
     // remove zeros on the end of the histogram
     size_t i = field.size()-1;
-    while(i > 1) {if(field[i] == 0) break; i--;}
-    size_t remove_counter = field.size() - i;
+    while(i > 1) {if(isEqual(field[i], 0.0)) break; i--;}
+//    size_t remove_counter = field.size() - i;
 //    m_data.erase(std::remove(m_data.begin()+remove_counter, m_data.end(), 0), m_data.end());
 
     i= 0;
@@ -283,7 +305,7 @@ void nucmath::Hist::truncateZeroBins()
     if(i != 0)
     {
         field.erase(std::remove(field.begin(), field.begin()+i, 0), field.end());
-        startValue += m_binWidth*i;
+        lowerEdge += binWidth*i;
     }
 
     changed = true;
@@ -324,18 +346,18 @@ bool nucmath::Hist::sumUp(const Hist& hist)
     for(size_t i = 0; i < hist.nBins(); i++)
     {
         const double y = hist.data().at(i);
-        const double x = hist.getStartX() + hist.getBinWidth()*i;
+        const double x = hist.getLowestEdge() + hist.getBinWidth()*i;
 
         for(size_t j = 0; j < (size_t)parts; j++)
         {
             if(j == 0)
             {
-                double are_fraction = getBinWidth()-fmod(x - getStartX(), getBinWidth());
+                double are_fraction = getBinWidth()-fmod(x - getLowestEdge(), getBinWidth());
                 add(x, y*are_fraction/parts);
             }
             else if(j == (size_t)parts-1)
             {
-                double are_fraction = fmod(x - getStartX(), getBinWidth());
+                double are_fraction = fmod(x - getLowestEdge(), getBinWidth());
                 add(x, y*are_fraction/parts);
             }
             else
@@ -362,7 +384,7 @@ void nucmath::Hist::fold(Hist& folded,double sigmaResolution)
     const bool mirrorMode = false;
 
     const size_t len = nBins();
-    folded.init(this->getStartX(),this->getBinWidth(),len);
+    folded.init(this->getLowestEdge(),this->getBinWidth(),len);
 
 
 //    std::cout << "Faltung beginnt..." << std::endl;
@@ -420,18 +442,27 @@ bool nucmath::Hist::setBinWidth(double width)
     if(width <= 0)
         return false;
     else
-        m_binWidth = width;
-}
+        binWidth = width;
 
+    return true;
+}
+/*
 bool nucmath::Hist::setStartX(double startX)
 {
-    this->startValue = startX;
-
+    this->lowerEdge = startX;
 	return true;
 }
+*/
 
-double nucmath::Hist::getStartX() const { return startValue; }
-double nucmath::Hist::getBinWidth() const { return m_binWidth; }
+std::pair<double, double> nucmath::Hist::getRangeOfInsertedData() const
+{
+    return {hRangeL, hRangeR};
+}
+
+double nucmath::Hist::getLowestEdge() const { return lowerEdge; }
+double nucmath::Hist::getHighestEdge() const{ return lowerEdge + nBins()*binWidth; };
+
+double nucmath::Hist::getBinWidth() const { return binWidth; }
 
 
 size_t nucmath::Hist::nBins() const { return field.size(); }
@@ -449,7 +480,7 @@ void nucmath::Hist::save(const std::string& path) const
         for(size_t i = 0; i < nBins(); i++)
         {
             const auto& [x,y] = data(i);
-            stream << x << "\t" << y << std::endl;
+            stream << nucmath::to_string(x,10) << "\t" << y << std::endl;
         }
     }
     else

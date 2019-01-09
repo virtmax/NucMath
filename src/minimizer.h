@@ -12,6 +12,7 @@
 #include <functional>
 #include <string>
 
+#include "vector.h"
 #include "minimizerrandom.h"
 #include "minimizerdownhillsimplex.h"
 
@@ -27,7 +28,8 @@ public:
 
     enum MinimizerMethode {Random = 0, DownhillSimplex };
 
-    void setData(const std::vector<double> &x, const std::vector<double> &y);
+    void setData(const std::vector<double> &inputs, const std::vector<double> &y);
+    void setData(const std::vector<nucmath::Vector<double>> &inputs, const std::vector<double> &y);
 
     void setNumberOfSeedPoints(size_t number_of_seed_points);
 
@@ -37,7 +39,7 @@ public:
 
     void setParameterNames(std::vector<std::string> names);
 
-    bool findFit(size_t interations, double tolerance);
+    double findFit(size_t interations, double tolerance);
 
 
     std::string getFormatedInitialPoints();
@@ -50,7 +52,8 @@ public:
 
 private:
 
-    std::vector<double> x,y;    // data
+    std::vector<nucmath::Vector<double>> inputs;
+    std::vector<double> y;    // data
 
     size_t number_of_seed_points;
 

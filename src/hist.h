@@ -11,6 +11,7 @@
 #include <numeric>
 #include <limits>
 #include "datatable.h"
+#include "utils.h"
 
 #pragma once
 
@@ -21,17 +22,17 @@ class Hist
 {
 public:
     Hist();
-    Hist(double startValue, double binWidth, size_t nBins);
+    Hist(double lowerEdge, double binWidth, size_t nBins);
     ~Hist();
 
 
     /**
      * @brief Initialize the histogram
-     * @param startPosition The value of the first histogram bin.
+     * @param lowerEdge The value of the lowest value included in the histogram. Left edge of the first bin.
      * @param binWidth
      * @param numberOfBins
      */
-    void init(double startPosition, double binWidth, size_t nBins = 100);
+    void init(double lowerEdge, double binWidth, size_t nBins);
 
 
     /**
@@ -87,10 +88,10 @@ public:
             return false;
 
         size_t binNr = 0;
-        startValue = data.at(0)[xColumn]- xWidth/2.0;
-        m_binWidth = binWidth;
+        lowerEdge = data.at(0)[xColumn]- xWidth/2.0;
+        binWidth = binWidth;
         const double endValue = data.at(data.size()-1)[xColumn]+xWidth/2.0;
-        const size_t numOfBins = ceil((endValue-startValue)/binWidth);  // round up
+        const size_t numOfBins = ceil((endValue-lowerEdge)/binWidth);  // round up
         field.clear();
         field.resize(numOfBins,0);
 
@@ -99,17 +100,17 @@ public:
         {
             double newBinValue = 0;
             const double xi = data.at(i)[xColumn];
-            binNr = floor((xi - xWidth/2.0 - startValue)/binWidth);
+            binNr = floor((xi - xWidth/2.0 - lowerEdge)/binWidth);
 
             // value fit completely into the bin width
-            if(xi+xWidth/2.0 <= startValue + binWidth*(binNr+1))
+            if(xi+xWidth/2.0 <= lowerEdge + binWidth*(binNr+1))
             {
                 newBinValue += data.at(i)[yColumn];
             }
-            else if(xi+xWidth/2.0 > startValue + binWidth*(binNr+1)
-                    && xi+xWidth/2.0 <= startValue + binWidth*(binNr+2))
+            else if(xi+xWidth/2.0 > lowerEdge + binWidth*(binNr+1)
+                    && xi+xWidth/2.0 <= lowerEdge + binWidth*(binNr+2))
             {
-                double RestFraction = ((xi+xWidth/2.0)-(startValue + binWidth*(binNr+1)))/xWidth;
+                double RestFraction = ((xi+xWidth/2.0)-(lowerEdge + binWidth*(binNr+1)))/xWidth;
                 newBinValue += data.at(i)[yColumn]*(1.0-RestFraction);
                 double restF = data.at(i)[yColumn]*RestFraction;
                 add(binNr+1, restF, true);
@@ -160,9 +161,10 @@ public:
 	double getBinWidth() const;
 
 
-    bool setStartX(double startX);
+    std::pair<double, double> getRangeOfInsertedData() const;
 
-    double getStartX() const;
+    double getLowestEdge() const;
+    double getHighestEdge() const;
 
     /**
      * @brief Return the number of bins of the histogram.
@@ -226,7 +228,7 @@ public:
 
     size_t meanBin();
 
-
+    double centerOfMass();
 
 
 /*
@@ -286,7 +288,7 @@ public:
 private:
 
     std::vector<double> field;     //! Histogram data
-    double m_binWidth;             //! The width of on bin.
+    double binWidth;             //! The width of on bin.
 
 
     /**
@@ -294,7 +296,10 @@ private:
      *
      * Its necessary to avoid big m_data size, if the histogram is starting with big values.
      */
-    double startValue;
+    double lowerEdge;
+
+    double hRangeL;
+    double hRangeR;
 
     bool initialized;
 

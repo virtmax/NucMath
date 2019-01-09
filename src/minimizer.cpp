@@ -17,9 +17,24 @@ Minimizer::~Minimizer()
 
 }
 
-void Minimizer::setData(const std::vector<double> &x, const std::vector<double> &y)
+void Minimizer::setData(const std::vector<double> &inputs, const std::vector<double> &y)
 {
-    this->x = x;
+    // create a new list with 1D vectors
+    std::vector<nucmath::Vector<double>> inptVecList;
+    this->inputs.clear();
+    for(const double& v : inputs)
+    {
+        nucmath::Vector<double> vec(1);
+        vec(0) = v;
+        this->inputs.push_back(vec);
+    }
+
+    this->y = y;
+}
+
+void Minimizer::setData(const std::vector<nucmath::Vector<double>> &inputs, const std::vector<double> &y)
+{
+    this->inputs = inputs;
     this->y = y;
 }
 
@@ -31,14 +46,14 @@ void Minimizer::setModelFunction(MODELFUNC &modelFunction)
         const size_t len = y.size();
         for (size_t i = 0; i < len; i++)
         {
-            const double delta_y = modelFunction(p, x[i]) - y[i];
+            const double delta_y = modelFunction(p, inputs.at(i)) - y[i];
             if(y[i] > 0)
                 chi2result += delta_y*delta_y/y[i];
             else
                 chi2result += delta_y*delta_y;
 
         }
-        return chi2result/((double)len);
+        return chi2result/static_cast<double>(len);
     };
 }
 
@@ -125,7 +140,7 @@ std::string Minimizer::getFormatedFitResults()
     return text;
 }
 
-bool Minimizer::findFit(size_t interations, double tolerance)
+double Minimizer::findFit(size_t interations, double tolerance)
 {
     /*
     func2min = [&](const std::vector<double> &p)

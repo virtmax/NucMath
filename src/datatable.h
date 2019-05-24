@@ -18,6 +18,7 @@
 
 
 #include "constants.h"
+#include "utils.h"
 #include "integration.h"
 #include "stringoperations.h"
 
@@ -59,7 +60,7 @@ public:
     ~DataTable();
 
     bool load(const std::string &file);
-    bool save(const std::string &file);
+    bool save(const std::string &file) const;
 
     void addRow(const TableRow& row);
     void addRow(const std::vector<double> &row);

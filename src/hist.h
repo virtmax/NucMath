@@ -12,6 +12,7 @@
 #include <limits>
 #include "datatable.h"
 #include "utils.h"
+#include "functions.h"
 
 #pragma once
 
@@ -54,78 +55,14 @@ public:
      * @param xWidth
      * @param binWidth
      */
-    bool create(DataTable &datatable, size_t column, double binWidth)
-    {
-        if(column >= datatable.getNumberOfColumns())
-            return false;
-
-        auto data = datatable.getData();
-        if(data.size() == 0)
-            return false;
-
-        init(data.at(0)[column], binWidth, 8);
-
-        for(size_t i = 0; i < data.size(); i++)
-        {
-            add(data.at(i)[column], 1, true);
-        }
-
-        return true;
-    }
+    bool create(DataTable &datatable, size_t column, double binWidth);
 
 
     /**
      *  @brief: Create a Histogram from a histogram contained inside the DataTable container.
      *
      */
-    bool create(DataTable &datatable, size_t xColumn, size_t yColumn, double xWidth, double binWidth)
-    {
-        if(xColumn >= datatable.getNumberOfColumns() || yColumn >= datatable.getNumberOfColumns())
-            return false;
-
-        auto data = datatable.getData();
-        if(data.size() == 0)
-            return false;
-
-        size_t binNr = 0;
-        lowerEdge = data.at(0)[xColumn]- xWidth/2.0;
-        binWidth = binWidth;
-        const double endValue = data.at(data.size()-1)[xColumn]+xWidth/2.0;
-        const size_t numOfBins = ceil((endValue-lowerEdge)/binWidth);  // round up
-        field.clear();
-        field.resize(numOfBins,0);
-
-
-        for(size_t i = 0; i < data.size();i++)
-        {
-            double newBinValue = 0;
-            const double xi = data.at(i)[xColumn];
-            binNr = floor((xi - xWidth/2.0 - lowerEdge)/binWidth);
-
-            // value fit completely into the bin width
-            if(xi+xWidth/2.0 <= lowerEdge + binWidth*(binNr+1))
-            {
-                newBinValue += data.at(i)[yColumn];
-            }
-            else if(xi+xWidth/2.0 > lowerEdge + binWidth*(binNr+1)
-                    && xi+xWidth/2.0 <= lowerEdge + binWidth*(binNr+2))
-            {
-                double RestFraction = ((xi+xWidth/2.0)-(lowerEdge + binWidth*(binNr+1)))/xWidth;
-                newBinValue += data.at(i)[yColumn]*(1.0-RestFraction);
-                double restF = data.at(i)[yColumn]*RestFraction;
-                add(binNr+1, restF, true);
-            }
-            else
-            {
-                std::cout<< "Hist2d: a data point can't be splitted over more than 2 bins."<<std::endl;
-            }
-
-            add(binNr, newBinValue, true);
-        }
-
-        changed = true;
-        return true;
-    }
+    bool create(DataTable &datatable, size_t xColumn, size_t yColumn, double xWidth, double binWidth);
 
 
     /**
@@ -216,7 +153,7 @@ public:
      * @return
      */
     double mean() const;
-
+    double mean(double start, double end) const;
 
     /**
      * @brief Get the bin with the biggest value in the histogram.
@@ -233,9 +170,11 @@ public:
 
 /*
     double mean_x() const;
+*/
 
     double standardDeviation() const;
-*/
+    double standardDeviation(double start, double end) const;
+
 
     /**
      * @brief Get status about the changing of the data stored in the histogram.
@@ -277,13 +216,21 @@ public:
 
     std::pair<double, double> getRange() const;
 
+    std::vector<double>::const_iterator begin() const { return field.begin(); }
     std::vector<double>::iterator begin() { return field.begin(); }
+
+    std::vector<double>::const_iterator end() const { return field.end(); }
     std::vector<double>::iterator end() { return field.end(); }
 
     const Hist& getCopy() const { return *this; }
     void setCopy(const Hist &hist);
 
+    void load(const std::string& path);
     void save(const std::string& path) const;
+
+    Hist getWithNewBinning(double binning);
+
+    Hist getUnfolded(double sigma);
 
 private:
 

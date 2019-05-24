@@ -30,6 +30,7 @@ public:
 
     void setData(const std::vector<double> &inputs, const std::vector<double> &y);
     void setData(const std::vector<nucmath::Vector<double>> &inputs, const std::vector<double> &y);
+    void setWeights(const std::vector<double> &weights);
 
     void setNumberOfSeedPoints(size_t number_of_seed_points);
 
@@ -54,6 +55,7 @@ private:
 
     std::vector<nucmath::Vector<double>> inputs;
     std::vector<double> y;    // data
+    std::vector<double> weights;
 
     size_t number_of_seed_points;
 

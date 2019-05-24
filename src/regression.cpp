@@ -32,10 +32,12 @@ nucmath::Regression::LinearRegressionResult nucmath::Regression::linear(const st
     for(size_t i = 0; i < N; i++)
     {
         sum_x +=    points[i][0];
-        sum_y +=    points[i][1];
         sum_x2 +=   points[i][0]*points[i][0];
-        sum_y2 +=   points[i][1]*points[i][1];
+
         sum_x_y+=   points[i][0]*points[i][1];
+
+        sum_y +=    points[i][1];
+        sum_y2 +=   points[i][1]*points[i][1];
     }
 
     const double b_counter = (N*sum_x_y-sum_x*sum_y);
@@ -48,10 +50,20 @@ nucmath::Regression::LinearRegressionResult nucmath::Regression::linear(const st
     result.a0 = (sum_y - result.a1*sum_x)/N;
     result.r2 = 0;
 
+    result.sqr = 0;
+    for(size_t i = 0; i < N; i++)
+    {
+        double residual = points[i][1] - (result.a0 + result.a1*points[i][0]);
+        result.sqr += residual*residual;
+    }
+
+
     const double R2_counter = b_counter*b_counter;
     const double R2_denominator = (N*sum_x2 - sum_x*sum_x)*(N*sum_y2 - sum_y*sum_y);
     if(!isEqual(R2_denominator, 0))
         result.r2 = R2_counter/R2_denominator;
+
+    result.r2_red = 1.0 - (1.0 - result.r2)*(N-1.0)/(N-2.0);
 
     return result;
 }
@@ -93,9 +105,12 @@ nucmath::Regression::QuadraticRegressionResult nucmath::Regression::quadratic(co
     const double sx2x2 = x4_bar - x2_bar*x2_bar;
     const double sx2y = y_x2_bar - x2_bar*y_bar;
 
-    result.a2 = (sx2y * sxx - sxy * sxx2) / (sxx * sx2x2 - sxx2 * sxx2);
+    result.c = result.a2 = (sx2y * sxx - sxy * sxx2) / (sxx * sx2x2 - sxx2 * sxx2);
     result.a1 = (sxy * sx2x2 - sx2y * sxx2) / (sxx * sx2x2 - sxx2 * sxx2);
     result.a0 = y_bar - result.a1*x_bar - result.a2*x2_bar;
+
+    result.x0 = -result.a1/(2*result.a2);
+    result.y0 = result.a0 - result.a1*result.a1/(4*result.a2);
 
     return result;
 }

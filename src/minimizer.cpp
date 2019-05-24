@@ -38,16 +38,24 @@ void Minimizer::setData(const std::vector<nucmath::Vector<double>> &inputs, cons
     this->y = y;
 }
 
+void Minimizer::setWeights(const std::vector<double> &weights)
+{
+    this->weights = weights;
+}
+
 void Minimizer::setModelFunction(MODELFUNC &modelFunction)
 {
     func2min = [&](const std::vector<double> &p)
     {
         double chi2result = 0.0;
         const size_t len = y.size();
-        for (size_t i = 0; i < len; i++)
+        for(size_t i = 0; i < len; i++)
         {
             const double delta_y = modelFunction(p, inputs.at(i)) - y[i];
-            if(y[i] > 0)
+
+            if(weights.size() > 0)
+                chi2result += weights.at(i)*delta_y*delta_y;
+            else if(y[i] > 0)
                 chi2result += delta_y*delta_y/y[i];
             else
                 chi2result += delta_y*delta_y;

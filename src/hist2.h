@@ -56,11 +56,19 @@ public:
     */
     double meanOverRow(size_t row) const;
 
+    std::tuple<double, double, double> max() const;
+    std::tuple<double, double, double> max(size_t column) const;
+
     double& dataref(size_t binX, size_t binY);
+    const double& dataref(size_t binX, size_t binY) const;
     double& dataref(size_t bin);
+    const double& dataref(size_t bin) const;
+
+    std::vector<std::vector<double>>::iterator begin() { return field.begin(); }
+    std::vector<std::vector<double>>::iterator end() { return field.end(); }
 
     std::tuple<double, double, double> data(size_t bin) const;
-    double data(size_t binX, size_t binY) const;
+    std::tuple<double, double, double> data(size_t binX, size_t binY) const;
 
     bool isChanged(bool leaveChanged);
 

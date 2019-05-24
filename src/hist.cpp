@@ -94,17 +94,17 @@ void nucmath::Hist::fill(double x)
     field.assign(field.size(), x);
 }
 
-nucmath::Hist& nucmath::Hist::operator=(const nucmath::Hist & hist2d)
+nucmath::Hist& nucmath::Hist::operator=(const nucmath::Hist& hist)
 {
     clear();
-    for(auto it = hist2d.data().begin(); it !=hist2d.data().end(); it++)
-    {
-        field.push_back(*it);
-    }
+    field = hist.data();
 
-    lowerEdge = hist2d.getLowestEdge();
-    binWidth = hist2d.getBinWidth();
+    lowerEdge = hist.getLowestEdge();
+    binWidth = hist.getBinWidth();
+    hRangeL = hist.getRange().first;
+    hRangeR = hist.getRange().second;
     changed = true;
+    initialized = true;
 
     return *this;
 }
@@ -112,7 +112,7 @@ nucmath::Hist& nucmath::Hist::operator=(const nucmath::Hist & hist2d)
 std::pair<double, double> nucmath::Hist::data(size_t bin) const
 {
     if(bin < field.size())
-        return std::pair<double, double>(lowerEdge+binWidth*bin, field.at(bin));
+        return std::pair<double, double>(lowerEdge+binWidth*(bin+0.5), field.at(bin));
     else
         throw std::out_of_range("nucmath::Hist::data(std::size_t bin): bin="+std::to_string(bin));
 }
@@ -185,8 +185,8 @@ bool nucmath::Hist::add(double x, double y, bool expand)
     // expand to smaller values
     if(x < lowerEdge)
     {
-        size_t bin_diff = ceil((lowerEdge-x)/binWidth);
-        for(size_t i = 0; i < bin_diff; i++)
+        double bin_diff = ceil((lowerEdge-x)/binWidth);
+        for(double i = 0; i < bin_diff; i++)
         {
             field.emplace(field.begin(), 0.0);
         }
@@ -206,7 +206,7 @@ bool nucmath::Hist::add(double x, double y, bool expand)
     {
         if(expand)
         {
-            field.resize(bin+1,0);
+            field.resize(bin+1, 0);
             field.at(bin) += y;
             hRangeL = std::min(hRangeL, x);
             hRangeR = std::max(hRangeR, x);
@@ -225,6 +225,74 @@ bool nucmath::Hist::add(double x, double y, bool expand)
     return true;
 }
 
+bool nucmath::Hist::create(nucmath::DataTable &datatable, size_t column, double binWidth)
+{
+    if(column >= datatable.getNumberOfColumns())
+        return false;
+
+    auto data = datatable.getData();
+    if(data.size() == 0)
+        return false;
+
+    init(data.at(0)[column], binWidth, 8);
+
+    for(size_t i = 0; i < data.size(); i++)
+    {
+        add(data.at(i)[column], 1, true);
+    }
+
+    return true;
+}
+
+bool nucmath::Hist::create(nucmath::DataTable &datatable, size_t xColumn, size_t yColumn, double xWidth, double binWidth)
+{
+    if(xColumn >= datatable.getNumberOfColumns() || yColumn >= datatable.getNumberOfColumns())
+        return false;
+
+    auto data = datatable.getData();
+    if(data.size() == 0)
+        return false;
+
+    size_t binNr = 0;
+    lowerEdge = data.at(0)[xColumn]- xWidth/2.0;
+    binWidth = binWidth;
+    const double endValue = data.at(data.size()-1)[xColumn]+xWidth/2.0;
+    const size_t numOfBins = ceil((endValue-lowerEdge)/binWidth);  // round up
+    field.clear();
+    field.resize(numOfBins,0);
+
+
+    for(size_t i = 0; i < data.size();i++)
+    {
+        double newBinValue = 0;
+        const double xi = data.at(i)[xColumn];
+        binNr = floor((xi - xWidth/2.0 - lowerEdge)/binWidth);
+
+        // value fit completely into the bin width
+        if(xi+xWidth/2.0 <= lowerEdge + binWidth*(binNr+1))
+        {
+            newBinValue += data.at(i)[yColumn];
+        }
+        else if(xi+xWidth/2.0 > lowerEdge + binWidth*(binNr+1)
+                && xi+xWidth/2.0 <= lowerEdge + binWidth*(binNr+2))
+        {
+            double RestFraction = ((xi+xWidth/2.0)-(lowerEdge + binWidth*(binNr+1)))/xWidth;
+            newBinValue += data.at(i)[yColumn]*(1.0-RestFraction);
+            double restF = data.at(i)[yColumn]*RestFraction;
+            add(binNr+1, restF, true);
+        }
+        else
+        {
+            std::cout<< "Hist2d: a data point can't be splitted over more than 2 bins."<<std::endl;
+        }
+
+        add(binNr, newBinValue, true);
+    }
+
+    changed = true;
+    return true;
+}
+
 double nucmath::Hist::centerOfMass()
 {
     double wmass = 0.0;
@@ -237,6 +305,34 @@ double nucmath::Hist::centerOfMass()
     return wmass;
 }
 
+double nucmath::Hist::standardDeviation() const
+{
+    return standardDeviation(hRangeL, hRangeR);
+}
+
+double nucmath::Hist::standardDeviation(double start, double end) const
+{
+    double s = 0.0;
+    double mean = this->mean(start, end);
+    double n = 0;
+    for(size_t i = 0; i < field.size(); i++)
+    {
+        const auto& [x,y] = data(i);
+        if(start <= x && x<= end)
+        {
+            s += (mean-y)*(mean-y);
+            n++;
+        }
+    }
+
+    if(nBins() >= 2)
+        s = std::sqrt(s/(n-1));
+    else
+        s = 0;
+
+    return s;
+}
+
 double nucmath::Hist::sum() const
 {
     return std::accumulate(field.begin(), field.end(), 0);
@@ -245,6 +341,25 @@ double nucmath::Hist::sum() const
 double nucmath::Hist::mean() const
 {
     return sum()/nBins();
+}
+
+double nucmath::Hist::mean(double start, double end) const
+{
+    start = std::max(start, lowerEdge);
+    end = std::min(end, this->hRangeR);
+
+    size_t sBin = 0;
+    size_t eBin = 0;
+    double m = 0;
+
+    sBin = bin(start);
+    eBin = bin(end);
+    if(eBin > 0)
+        m = std::accumulate(field.begin()+sBin, field.begin()+eBin, 0)/(eBin + 1 - sBin);
+
+
+
+    return m;
 }
 
 size_t nucmath::Hist::maxBin() const
@@ -470,6 +585,40 @@ size_t nucmath::Hist::nBins() const { return field.size(); }
 std::vector<double>& nucmath::Hist::data()  { return field; }
 const std::vector<double>& nucmath::Hist::data() const { return field; }
 
+void nucmath::Hist::load(const std::string& path)
+{
+    std::ifstream in;
+    in.open(path);
+
+    if(!in.is_open())
+        throw std::invalid_argument("Can't open '" + path + "'.");
+
+    std::vector<std::string> tokens;
+    std::vector<double> row = {};
+    std::smatch match;
+    std::string line = "";
+    while(!in.eof())
+    {
+        std::getline(in, line);
+
+        line.erase(0, line.find_first_not_of(" \t\n\r\f\v"));   // trim leading whitespaces
+
+        if(line.size() == 0 || line.at(0) == '#' || line.at(0) == '_')
+            continue;
+
+        tokens = tokenize(line, {' ', '\t', '|', ','});
+
+        double x = 0.0;
+        double y = 0.0;
+        s2d(tokens.at(0).c_str(), x);
+        s2d(tokens.at(1).c_str(), y);
+
+        add(x,y);
+    }
+
+    in.close();
+}
+
 void nucmath::Hist::save(const std::string& path) const
 {
     std::ofstream stream;
@@ -489,4 +638,80 @@ void nucmath::Hist::save(const std::string& path) const
     }
 
     stream.close();
+}
+
+nucmath::Hist nucmath::Hist::getWithNewBinning(double binning)
+{
+    Hist hist;
+    hist.setBinWidth(binning);
+
+    for(size_t i = 0; i < nBins(); i++)
+    {
+        hist.add(data(i).first, data(i).second);    // TODO: naive lösung, erzeugt artefakte
+    }
+
+    return hist;
+}
+
+nucmath::Hist nucmath::Hist::getUnfolded(double sigma)
+{
+    Hist copy = *this;
+    Hist hist(this->hRangeL, binWidth, 10);
+
+    double binWidth = copy.getBinWidth();
+
+    bool done = false;
+    size_t i = 0;
+    while(!done)
+    {
+        size_t maxBin = copy.maxBin();
+        double maxBinX = copy.data(maxBin).first;
+        double startX = maxBinX;//nucmath::getRandom(maxBinX - binWidth/2.0, maxBinX + binWidth/2.0);
+        double SUM = 0.0;
+
+        int b = maxBin;
+        for(double x = maxBinX-binWidth/2.0; x > maxBinX-binWidth/2.0-5*sigma; x-=binWidth)
+        {
+            double l = x;
+            double r = x + binWidth;
+            double sum = nucmath::normalDistIntegral(startX, sigma, l, r);
+
+            if(b >= 0)
+            {
+                SUM += sum;
+                copy.data()[b] -= sum;
+            }
+            else
+                break;
+
+            b--;
+        }
+        b = maxBin+1;
+        for(double x = maxBinX+binWidth/2.0; x < maxBinX+binWidth/2.0+5*sigma; x+=binWidth)
+        {
+            double l = x;
+            double r = x + binWidth;
+            double sum = nucmath::normalDistIntegral(startX, sigma, l, r);
+
+
+            if(b < copy.nBins())
+            {
+                SUM += sum;
+                copy.data()[b] -= sum;
+            }
+            else
+                break;
+
+            b++;
+        }
+
+        hist.add(startX, SUM);
+
+        if(copy.mean() < 0.0 )
+            done = true;
+
+        i++;
+    }
+
+    return hist;
 }

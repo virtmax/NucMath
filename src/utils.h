@@ -4,6 +4,7 @@
 
 #include <limits>
 #include <cmath>
+#include <sstream>
 
 namespace nucmath
 {
@@ -14,5 +15,6 @@ namespace nucmath
 bool isEqual(float v1, float v2);
 bool isEqual(double v1, double v2);
 
+bool s2d(const std::string &str, double &val, const std::locale &loc=std::locale::classic());
 
 }

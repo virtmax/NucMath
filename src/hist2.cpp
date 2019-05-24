@@ -48,8 +48,8 @@ bool nucmath::Hist2::add(double x, double y, double z, bool expand)
     if(!initialized)
     {
         // set the left edge of the first bin
-        startPosX = x - binWidth/2.0;
-        startPosY = y - binHeight/2.0;
+        startPosX = x;
+        startPosY = y;
         initialized = true;
     }
     changed = true;
@@ -131,6 +131,40 @@ double nucmath::Hist2::meanOverRow(size_t row) const
     return sum/static_cast<double>(field.at(row).size());
 }
 
+std::tuple<double, double, double> nucmath::Hist2::max() const
+{
+    double max = std::numeric_limits<double>::lowest();
+    size_t maxBin = 0;
+    for(size_t j = 0; j < field.size()*field.at(0).size(); j++)
+    {
+        double d = dataref(j);
+        if(d > max)
+        {
+            max = d;
+            maxBin = j;
+        }
+    }
+
+    return data(maxBin);
+}
+
+std::tuple<double, double, double> nucmath::Hist2::max(size_t column) const
+{
+    double max = std::numeric_limits<double>::lowest();
+    size_t binY = 0;
+    for(size_t j = 0; j < nBinsY(); j++)
+    {
+        double d = field.at(j).at(column);
+        if(d > max)
+        {
+            max = d;
+            binY = j;
+        }
+    }
+
+    return data(column, binY);
+}
+
 double& nucmath::Hist2::dataref(size_t binX, size_t binY)
 {
     if(field.size() == 0 || field.at(0).size() == 0)
@@ -155,6 +189,30 @@ double& nucmath::Hist2::dataref(size_t bin)
     return field.at(rowBin).at(colBin);
 }
 
+const double& nucmath::Hist2::dataref(size_t bin) const
+{
+    if(field.size() == 0 || field.at(0).size() == 0)
+        throw std::invalid_argument("Hist2::data(size_t bin): the histogram is empty");
+    if(field.size()*field.at(0).size() <= bin)
+        throw std::invalid_argument("Hist2::data(size_t bin): requested bin is outside the data field.");
+
+    size_t rowLen = field.at(0).size();
+    size_t colBin = bin % rowLen;
+    size_t rowBin = (bin-colBin)/rowLen;
+
+    return field.at(rowBin).at(colBin);
+}
+
+const double& nucmath::Hist2::dataref(size_t binX, size_t binY) const
+{
+    if(field.size() == 0 || field.at(0).size() == 0)
+        throw std::invalid_argument("Hist2::dataref(size_t binX, size_t binY): the histogram is empty");
+    if(field.size()*field.at(0).size() <= binX*binY)
+        throw std::invalid_argument("Hist2::dataref(size_t binX, size_t binY): requested bin is outside the data field.");
+
+    return field.at(binY).at(binX);
+}
+
 std::tuple<double, double, double> nucmath::Hist2::data(size_t bin) const
 {
     if(field.size() == 0 || field.at(0).size() == 0)
@@ -167,19 +225,16 @@ std::tuple<double, double, double> nucmath::Hist2::data(size_t bin) const
     size_t colBin = bin % rowLen;
     size_t rowBin = (bin-colBin)/rowLen;
 
-    return std::tuple<double, double, double>(startPosX+colBin*binWidth+binWidth/2.0,
-                                                  startPosY+rowBin*binHeight+binHeight/2.0, field.at(rowBin).at(colBin));
+    return std::tuple<double, double, double>(startPosX+(colBin+0.5)*binWidth,
+                                                  startPosY+(rowBin+0.5)*binHeight, field.at(rowBin).at(colBin));
 }
 
-double nucmath::Hist2::data(size_t binX, size_t binY) const
+std::tuple<double, double, double> nucmath::Hist2::data(size_t binX, size_t binY) const
 {
-    if(field.size() == 0 || field.at(0).size() == 0)
-        throw std::invalid_argument("Hist2::dataref(size_t binX, size_t binY): the histogram is empty");
-    if(field.size()*field.at(0).size() <= binX*binY)
-        throw std::invalid_argument("Hist2::dataref(size_t binX, size_t binY): requested bin is outside the data field.");
-
-    return field.at(binY).at(binX);
+    return std::tuple<double, double, double>(startPosX+(binX+0.5)*binWidth,
+                                                  startPosY+(binY+0.5)*binHeight, field.at(binY).at(binX));
 }
+
 
 size_t nucmath::Hist2::nBinsX() const
 {
@@ -266,7 +321,7 @@ bool nucmath::Hist2::save(const std::string& path, nucmath::Hist2::FileFormat fi
         {
             for(size_t ix = 0; ix < nBinsX(); ix++)
             {
-                double z = data(ix, iy);
+                const double z = dataref(ix, iy);
 
                 if(ix+1 < nBinsX())
                     stream << z << "\t";

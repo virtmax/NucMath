@@ -113,13 +113,13 @@ bool DataTable::load(const std::string& file)
     size_t lineNr = 0;
 
     // table with (white space, commas, | ) delimiters between columns. one line = one row.
-    const std::regex patternStandardTable("^\\s*(([-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?)(\\s*[\\|,]?\\s*))+$");
+    const std::regex patternStandardTable("(([-+]?([0-9]*[.]?[0-9]+)([eE][-+]?[0-9]+)?))+$");   // TODO: bug, erkennt 0. nicht
 
     // example: "{50.4, 3.426, 398.8}"
     //const std::regex paternMathematicaTable2("^( )*[{]{1}( )*[0-9]+(?:\\.[0-9]*)?( )*,( )*[0-9]+(?:\\.[0-9]*)?( \\)*[}]{1}");
 
     std::vector<std::string> tokens;
-    std::vector<double> row;
+    std::vector<double> row = {};
     std::smatch match;
     std::string line = "";
     while(!in.eof())
@@ -128,7 +128,7 @@ bool DataTable::load(const std::string& file)
 
         line.erase(0, line.find_first_not_of(" \t\n\r\f\v"));   // trim leading whitespaces
 
-        if(line.size() == 0 || line.at(0) == '#' || line.at(0) == '-' || line.at(0) == '_')
+        if(line.size() == 0 || line.at(0) == '#' || line.at(0) == '_')
             continue;
 
         if(format == DATATABLEFORMAT::_Unknown)
@@ -160,14 +160,19 @@ bool DataTable::load(const std::string& file)
             switch(format)
             {
             case DATATABLEFORMAT::Standard:
+            {
                 tokens = tokenize(line, {' ', '\t', '|', ','});
                 row.clear();
                 for(const auto& token : tokens)
                 {
-                    row.push_back(std::atof(token.c_str()));
+                    double d = 0.0;
+                    s2d(token, d);
+                    row.push_back(d);
                 }
                 addRow(row);
+
                 break;
+            }
             default:
                 break;
             }
@@ -186,7 +191,7 @@ bool DataTable::load(const std::string& file)
 }
 
 
-bool DataTable::save(const std::string &file)
+bool DataTable::save(const std::string &file) const
 {
     std::ofstream out(file, std::ios_base::out);
 

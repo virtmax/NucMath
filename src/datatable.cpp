@@ -126,7 +126,11 @@ bool DataTable::load(const std::string& file)
     {
         std::getline(in, line);
 
-        line.erase(0, line.find_first_not_of(" \t\n\r\f\v"));   // trim leading whitespaces
+        if(line.size() == 0)
+            continue;
+
+        const auto& last_non_ws = line.find_last_not_of(" \t\n\r\f\v");
+        line.erase(line.begin()+last_non_ws+1, line.end());   // trim leading whitespaces
 
         if(line.size() == 0 || line.at(0) == '#' || line.at(0) == '_')
             continue;

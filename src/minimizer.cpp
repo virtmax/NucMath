@@ -75,7 +75,7 @@ void Minimizer::setInitialPointsAndConstrains(const std::vector< std::array<doub
     initial_points = initial_p;
 }
 
-void Minimizer::setParameterNames(std::vector<std::string> names)
+void Minimizer::setParameterNames(const std::vector<std::string> &names)
 {
     param_names = names;
 }

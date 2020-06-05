@@ -24,7 +24,7 @@ TEST_CASE("Matrix")
 
     SECTION("operator = (const Matrix& mat)")
     {
-        nucmath::Matrix mat2 = mat;
+        nucmath::Matrix<double> mat2 = mat;
         REQUIRE(mat == mat2);
     }
 

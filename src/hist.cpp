@@ -255,7 +255,7 @@ bool nucmath::Hist::create(nucmath::DataTable &datatable, size_t xColumn, size_t
 
     size_t binNr = 0;
     lowerEdge = data.at(0)[xColumn]- xWidth/2.0;
-    binWidth = binWidth;
+    this->binWidth = binWidth;
     const double endValue = data.at(data.size()-1)[xColumn]+xWidth/2.0;
     const size_t numOfBins = ceil((endValue-lowerEdge)/binWidth);  // round up
     field.clear();
@@ -335,7 +335,7 @@ double nucmath::Hist::standardDeviation(double start, double end) const
 
 double nucmath::Hist::sum() const
 {
-    return std::accumulate(field.begin(), field.end(), 0);
+    return std::accumulate(field.begin(), field.end(), 0.0);
 }
 
 double nucmath::Hist::mean() const
@@ -355,7 +355,7 @@ double nucmath::Hist::mean(double start, double end) const
     sBin = bin(start);
     eBin = bin(end);
     if(eBin > 0)
-        m = std::accumulate(field.begin()+sBin, field.begin()+eBin, 0)/(eBin + 1 - sBin);
+        m = std::accumulate(field.begin()+sBin, field.begin()+eBin, 0.0)/(eBin + 1 - sBin);
 
 
 

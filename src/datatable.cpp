@@ -98,7 +98,7 @@ void nucmath::DataTable::reset()
     nColumns = 0;
 }
 
-void DataTable::setHeader(std::string str)
+void DataTable::setHeader(const std::string &str)
 {
     header = str;
 }

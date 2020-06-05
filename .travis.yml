@@ -16,7 +16,7 @@ before_script:
 - lcov --directory . --zerocounters
 
 script:
-- wget https://github.com/catchorg/Catch2/releases/download/v2.3.0/catch.hpp
+- wget https://github.com/catchorg/Catch2/releases/download/v2.12.2/catch.hpp
 - cmake .
 - make
 - ./NucMath

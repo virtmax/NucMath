@@ -38,7 +38,7 @@ public:
     void setModelFunction(MODELFUNC &modelFunction);
     void setInitialPointsAndConstrains(const std::vector< std::array<double,3> > &initial_p);
 
-    void setParameterNames(std::vector<std::string> names);
+    void setParameterNames(const std::vector<std::string> &names);
 
     double findFit(size_t interations, double tolerance);
 

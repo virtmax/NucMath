@@ -73,7 +73,7 @@ public:
     void setNumOfRows(size_t rows, double defaultValue = 0.0);
     void reset();
 
-    void setHeader(std::string str);
+    void setHeader(const std::string &str);
 
     // Faltet die Daten mit der Normalverteilung
     void fold(DataTable& folded, float resolution, size_t column) const;

@@ -2,6 +2,7 @@
 #define MINIMIZER_RANDOM_H
 
 #include <random>
+#include <array>
 
 template <size_t N>
 double random_optimization(std::function<double (const std::array<double, N> &)> chi2func,

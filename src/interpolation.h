@@ -26,7 +26,7 @@ private:
     DataTable m_dataTable;
     std::vector<std::pair<double, double>> m_data;
 
-    InterpolationMode m_mode;
+    InterpolationMode m_mode {Linear};
 
 
     std::vector<std::pair<double,double>> LinearInterpolation();

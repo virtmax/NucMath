@@ -1,6 +1,6 @@
 #include "timeseries.h"
 
-nucmath::TimeSeries::TimeSeries() : nucmath::Hist()
+nucmath::TimeSeries::TimeSeries()
 {
     lastTimeValue = 0;
     firstTimeValue = 0.0;
@@ -8,13 +8,13 @@ nucmath::TimeSeries::TimeSeries() : nucmath::Hist()
 
 void nucmath::TimeSeries::setTimeGranularity(double timeBinWidth)
 {
-    setBinWidth(timeBinWidth);
+    hist.setBinWidth(timeBinWidth);
     entriesPerBin.setBinWidth(timeBinWidth);
 }
 
 void nucmath::TimeSeries::add(double time, double value)
 {
-    if (firstTimeValue < 0.0)
+    if(firstTimeValue < 0.0)
     {
         firstTimeValue = time;
     }
@@ -28,11 +28,19 @@ void nucmath::TimeSeries::add(double time, double value)
         }
         */
     }
-    Hist::add(time, value);
+    hist.add(time, value);
 
     entriesPerBin.add(time, 1.0);
 
     lastTimeValue = time;
+}
+
+size_t nucmath::TimeSeries::bin(double t)
+{
+    if(t >= hist.getLowestEdge() && t < hist.getLowestEdge() + hist.nBins()*hist.getBinWidth())
+        return floor((t-hist.getLowestEdge())/hist.getBinWidth());
+    else
+        throw std::invalid_argument("TimeSeries::bin(double x): x is outside the data range.");
 }
 
 std::pair<double, double> nucmath::TimeSeries::data(size_t bin) const
@@ -40,12 +48,20 @@ std::pair<double, double> nucmath::TimeSeries::data(size_t bin) const
     if(bin < entriesPerBin.nBins())
     {
         if(entriesPerBin.data(bin).second > 0.0)
-            return std::pair<double, double>(Hist::data(bin).first, Hist::data(bin).second/(entriesPerBin.data(bin).second*entriesPerBin.getBinWidth()));
+        {
+            const double y = hist.data(bin).second/(entriesPerBin.data(bin).second);
+            return std::pair<double, double>(hist.data(bin).first, y);
+        }
         else
-            return std::pair<double, double>(Hist::data(bin).first, 0);
+            return std::pair<double, double>(hist.data(bin).first, 0);
     }
     else
         throw std::out_of_range("nucmath::TimeSeries::data(std::size_t bin): bin="+std::to_string(bin));
+}
+
+bool nucmath::TimeSeries::isChanged(bool leaveChanged)
+{
+    return hist.isChanged(leaveChanged);
 }
 
 double nucmath::TimeSeries::max()
@@ -79,10 +95,34 @@ double nucmath::TimeSeries::min()
 double nucmath::TimeSeries::mean()
 {
     double sum = 0.0;
-    for(size_t i = 0; i < nBins(); i++)
+    for(size_t i = 0; i < hist.nBins(); i++)
     {
-        sum += Hist::data(i).second/(entriesPerBin.data(i).second);
+        sum += hist.data(i).second/(entriesPerBin.data(i).second);
     }
 
-    return sum/nBins();
+    return sum/hist.nBins();
+}
+
+bool nucmath::TimeSeries::save(const std::string& path) const
+{
+    std::ofstream stream;
+    stream.open(path);
+
+    if(stream.is_open())
+    {
+        for(size_t i = 0; i < nBins(); i++)
+        {
+            const auto& [x,y] = data(i);
+            stream << nucmath::to_string(x, 10) << "\t" << y << std::endl;
+        }
+    }
+    else
+    {
+        std::cout<< "Hist::save: can't open " << path << std::endl;
+        return false;
+    }
+
+    stream.close();
+
+    return true;
 }

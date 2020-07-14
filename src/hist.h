@@ -23,6 +23,7 @@ class Hist
 {
 public:
     Hist();
+    Hist(const Hist& hist);
     Hist(double lowerEdge, double binWidth, size_t nBins);
     ~Hist();
 
@@ -187,7 +188,7 @@ public:
      * @brief Set changed status manually.
      * @see isChanged
      */
-    void setChanged();
+    void setChanged(bool changed = true);
 
     void truncateZeroBins();
 
@@ -201,6 +202,9 @@ public:
 
     nucmath::Hist& normalizeArea();
     nucmath::Hist& normalizeToMax(double max);
+
+    bool isSet(double x) const;
+    const std::vector<bool>& getIsSetData() const;
 
     size_t bin(double x) const;
 
@@ -237,6 +241,7 @@ private:
     std::vector<double> field;     //! Histogram data
     double binWidth;             //! The width of on bin.
 
+    std::vector<bool> isSetData;
 
     /**
      * @brief The smallest value on the x-axis (the x-coordinate of the first bin).

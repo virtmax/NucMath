@@ -9,6 +9,11 @@ nucmath::Hist::Hist()
     binWidth = 1;
 }
 
+nucmath::Hist::Hist(const Hist& hist)
+{
+    *this = hist;
+}
+
 nucmath::Hist::Hist(double startValue, double binWidth, size_t nBins)
 {
     init(startValue, binWidth, nBins);
@@ -24,6 +29,8 @@ void nucmath::Hist::init(double lowerEdge, double binWidth, size_t nBins)
 {
     field.clear();
     field.resize(nBins, 0);
+    isSetData.clear();
+    isSetData.resize(nBins, false);
     initialized = true;
     changed = true;
     this->lowerEdge = lowerEdge;
@@ -35,6 +42,7 @@ void nucmath::Hist::init(double lowerEdge, double binWidth, size_t nBins)
 void nucmath::Hist::clear()
 {
     field.clear();
+    isSetData.clear();
     lowerEdge = 0;
     initialized = false;
     changed = true;
@@ -81,6 +89,20 @@ nucmath::Hist& nucmath::Hist::normalizeToMax(double max)
     return *this;
 }
 
+bool nucmath::Hist::isSet(double x) const
+{
+    size_t b = bin(x);
+    if(b < isSetData.size() && isSetData.at(b))
+        return true;
+    else
+        return false;
+}
+
+const std::vector<bool>& nucmath::Hist::getIsSetData() const
+{
+    return isSetData;
+}
+
 size_t nucmath::Hist::bin(double x) const
 {
     if(x>=lowerEdge && x < lowerEdge + field.size()*binWidth)
@@ -92,12 +114,14 @@ size_t nucmath::Hist::bin(double x) const
 void nucmath::Hist::fill(double x)
 {
     field.assign(field.size(), x);
+    isSetData.assign(field.size(), true);
 }
 
 nucmath::Hist& nucmath::Hist::operator=(const nucmath::Hist& hist)
 {
     clear();
     field = hist.data();
+    isSetData = hist.getIsSetData();
 
     lowerEdge = hist.getLowestEdge();
     binWidth = hist.getBinWidth();
@@ -189,6 +213,7 @@ bool nucmath::Hist::add(double x, double y, bool expand)
         for(double i = 0; i < bin_diff; i++)
         {
             field.emplace(field.begin(), 0.0);
+            isSetData.emplace(isSetData.begin(), false);
         }
         lowerEdge -= bin_diff*binWidth;
     }
@@ -201,6 +226,8 @@ bool nucmath::Hist::add(double x, double y, bool expand)
         field.at(bin) += y;
         hRangeL = std::min(hRangeL, x);
         hRangeR = std::max(hRangeR, x);
+
+        isSetData.at(bin) = true;
     }
     else
     {
@@ -210,6 +237,9 @@ bool nucmath::Hist::add(double x, double y, bool expand)
             field.at(bin) += y;
             hRangeL = std::min(hRangeL, x);
             hRangeR = std::max(hRangeR, x);
+
+            isSetData.resize(bin+1, false);
+            isSetData.at(bin) = true;
         }
         else
         {
@@ -260,7 +290,8 @@ bool nucmath::Hist::create(nucmath::DataTable &datatable, size_t xColumn, size_t
     const size_t numOfBins = ceil((endValue-lowerEdge)/binWidth);  // round up
     field.clear();
     field.resize(numOfBins,0);
-
+    isSetData.clear();
+    isSetData.resize(numOfBins, false);
 
     for(size_t i = 0; i < data.size();i++)
     {
@@ -399,9 +430,9 @@ bool nucmath::Hist::isChanged(bool leaveChanged)
     return temp;
 }
 
-void nucmath::Hist::setChanged()
+void nucmath::Hist::setChanged(bool changed)
 {
-    changed = true;
+    this->changed = changed;
 }
 
 void nucmath::Hist::truncateZeroBins()
@@ -420,6 +451,7 @@ void nucmath::Hist::truncateZeroBins()
     if(i != 0)
     {
         field.erase(std::remove(field.begin(), field.begin()+i, 0), field.end());
+        isSetData.erase(std::remove(isSetData.begin(), isSetData.begin()+i, false), isSetData.end());
         lowerEdge += binWidth*i;
     }
 
@@ -505,7 +537,7 @@ void nucmath::Hist::fold(Hist& folded,double sigmaResolution)
 //    std::cout << "Faltung beginnt..." << std::endl;
 //    std::cout << "Aufloesung: " << resolution_sigma << std::endl;
 
-    double progress = 0.00;
+//    double progress = 0.00;
     for(size_t bin = 0; bin < len; bin++)
     {
      /* if((double)bin/(double)len > progress)
@@ -516,7 +548,7 @@ void nucmath::Hist::fold(Hist& folded,double sigmaResolution)
 
         const int kernelWidth2 = static_cast<int>(ceil(sigmaResolution*3)+1);
 
-        double integr = 0.0, integrSum = 0.0;
+        double integr = 0.0;
 
         for(int k = -kernelWidth2; k <= kernelWidth2; k++)
         {

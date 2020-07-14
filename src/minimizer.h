@@ -51,6 +51,8 @@ public:
     std::vector<double> getResult() { return result; }
     std::vector<double> getResultUncertainty() { return result_sigma; }
 
+    OPTIMIZER_RETURN_TYPE getReturnType() { return returnType; };
+
 private:
 
     std::vector<nucmath::Vector<double>> inputs;
@@ -69,6 +71,8 @@ private:
     std::vector<std::string> param_names;
     std::vector<double> result;
     std::vector<double> result_sigma;
+
+    OPTIMIZER_RETURN_TYPE returnType    {OPTIMIZER_RETURN_TYPE::Unknown};
 };
 
 }

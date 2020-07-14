@@ -23,12 +23,23 @@ public:
         p.resize(N);
     }
 
+    optPoint(const optPoint& other)
+        : p(other.p), fp(other.fp), N(other.N)
+    {
+    }
+
+    optPoint(const std::vector<double> &p, double fp)
+    {
+        this->fp = fp;
+        this->N = p.size();
+        this->p = p;
+    }
+
     ~optPoint()
     {
     }
 
-
-    optPoint& operator=(optPoint other)
+    optPoint& operator=(const optPoint& other)
     {
         if(other.N != N)
             std::cout << "N!=N";
@@ -47,15 +58,13 @@ public:
         return false;
     }
 
-    std::vector<double> p;
-    double fp;
-    size_t N;
+    std::vector<double> p   {{}};
+    double fp   {std::numeric_limits<double>::max()};
+    size_t N    {0};
 
 private:
     optPoint()
     {
-        fp = std::numeric_limits<double>::max();
-        this->N = 0;
     }
 };
 

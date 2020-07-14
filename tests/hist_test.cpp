@@ -14,6 +14,17 @@ TEST_CASE("Hist", "[vector]" )
         REQUIRE(hist.getHighestEdge() == Approx(-10.0 + 0.25*8));
     }
 
+    SECTION( "copy constructor" )
+    {
+        nucmath::Hist hist(-10.0, 0.25, 8);
+
+        nucmath::Hist hist2(hist);
+
+        REQUIRE(hist2.getBinWidth() == Approx(0.25));
+        REQUIRE(hist2.getLowestEdge() == Approx(-10.0));
+        REQUIRE(hist2.getHighestEdge() == Approx(-10.0 + 0.25*8));
+    }
+
     SECTION( "init" )
     {
         nucmath::Hist hist;

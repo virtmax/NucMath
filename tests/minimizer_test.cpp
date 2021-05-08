@@ -18,7 +18,7 @@ TEST_CASE("Minimizer ")
     std::vector<std::array<double, 3> > initial_p = {  { 0, -10, 10 },
                                                         { 0, -10, 10 }  };
 
-    MODELFUNC lineModel = [&](const std::vector<double> &p, const nucmath::Vector<double> &x)
+    nucmath::MODELFUNC lineModel = [&](const std::vector<double> &p, const nucmath::Vector<double> &x)
     {
         return p[0] + p[1]*x(0);
     };

@@ -7,7 +7,7 @@
 
 TEST_CASE("Downhill simplex optimization")
 {
-    FUNC2MIN rosenbrock = [](const std::vector<double> &p)
+    nucmath::FUNC2MIN rosenbrock = [](const std::vector<double> &p)
     {
         double x = p[0];
         double y = p[1];

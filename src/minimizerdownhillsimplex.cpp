@@ -2,7 +2,7 @@
 #include "minimizerdownhillsimplex.h"
 
 
-OPTIMIZER_RETURN_TYPE nucmath::downhill_simplex_optimization(FUNC2MIN opt_func,
+nucmath::OPTIMIZER_RETURN_TYPE nucmath::downhill_simplex_optimization(FUNC2MIN opt_func,
                                      const std::vector< std::array<double,3> > &initial_p,
                                      std::vector<double> &result_p,
                                      double tolerance,

@@ -5,7 +5,8 @@ using namespace nucmath;
 
 Minimizer::Minimizer()
 {
-    rand_gen.seed(std::chrono::system_clock::now().time_since_epoch().count());
+    const auto startseed = std::chrono::system_clock::now().time_since_epoch().count();
+    rand_gen.seed(static_cast<unsigned int>(startseed));
 
     minMode = MinimizerMethode::DownhillSimplex;
 
@@ -14,10 +15,9 @@ Minimizer::Minimizer()
 
 Minimizer::~Minimizer()
 {
-
 }
 
-void Minimizer::setData(const std::vector<double> &inputs, const std::vector<double> &y)
+void Minimizer::setData(const std::vector<double>& inputs, const std::vector<double>& y)
 {
     // create a new list with 1D vectors
     this->inputs.clear();
@@ -31,37 +31,36 @@ void Minimizer::setData(const std::vector<double> &inputs, const std::vector<dou
     this->y = y;
 }
 
-void Minimizer::setData(const std::vector<nucmath::Vector<double>> &inputs, const std::vector<double> &y)
+void Minimizer::setData(const std::vector<nucmath::Vector<double>>& inputs, const std::vector<double>& y)
 {
     this->inputs = inputs;
     this->y = y;
 }
 
-void Minimizer::setWeights(const std::vector<double> &weights)
+void Minimizer::setWeights(const std::vector<double>& weights)
 {
     this->weights = weights;
 }
 
-void Minimizer::setModelFunction(MODELFUNC &modelFunction)
+void Minimizer::setModelFunction(MODELFUNC& modelFunction)
 {
-    func2min = [&](const std::vector<double> &p)
+    func2min = [&](const std::vector<double>& p)
     {
         double chi2result = 0.0;
         const size_t len = y.size();
         for(size_t i = 0; i < len; i++)
         {
             const double delta_y = modelFunction(p, inputs.at(i)) - y[i];
-            const double delta_y2 = delta_y*delta_y;
+            const double delta_y2 = delta_y * delta_y;
 
             if(weights.size() > 0)
-                chi2result += weights.at(i)*delta_y2;
+                chi2result += weights.at(i) * delta_y2;
             //else if(!nucmath::isEqual(y[i], 0.0))
-                //chi2result += delta_y2 / (y[i]*y[i]);
+            //chi2result += delta_y2 / (y[i]*y[i]);
             else
                 chi2result += delta_y2;
-
         }
-        return chi2result/static_cast<double>(len);
+        return chi2result / static_cast<double>(len);
     };
 }
 
@@ -70,12 +69,12 @@ void Minimizer::setNumberOfSeedPoints(size_t number_of_seed_points)
     this->number_of_seed_points = number_of_seed_points;
 }
 
-void Minimizer::setInitialPointsAndConstrains(const std::vector< std::array<double,3> > &initial_p)
+void Minimizer::setInitialPointsAndConstrains(const std::vector<std::array<double, 3>>& initial_p)
 {
     initial_points = initial_p;
 }
 
-void Minimizer::setParameterNames(const std::vector<std::string> &names)
+void Minimizer::setParameterNames(const std::vector<std::string>& names)
 {
     param_names = names;
 }
@@ -125,7 +124,8 @@ std::string Minimizer::getFormatedInitialPointsAndConstrains()
 
     for(size_t i = 0; i < param_names.size() && i < initial_points.size(); i++)
     {
-        text += param_names[i] + "=(" + std::to_string(initial_points[i][1]) + " < x=" + std::to_string(initial_points[i][0]) + " < " + std::to_string(initial_points[i][2]) + ")\n";
+        text += param_names[i] + "=(" + std::to_string(initial_points[i][1]) + " < x=" + std::to_string(initial_points[i][0]) + " < " +
+                std::to_string(initial_points[i][2]) + ")\n";
     }
 
     return text;
@@ -155,8 +155,7 @@ double Minimizer::findFit(size_t interations, double tolerance)
     const size_t N = initial_points.size();
 
     // internal function used to set a proposed optimization point back into the constrained region.
-    std::function<void (std::vector<double> &)> considerConstrains =
-            [&](std::vector<double> &p)
+    std::function<void(std::vector<double>&)> considerConstrains = [&](std::vector<double>& p)
     {
         for(size_t j = 0; j < N; j++)
         {
@@ -187,17 +186,17 @@ double Minimizer::findFit(size_t interations, double tolerance)
     result_sigma.resize(N, 0);
 
     const double varWidthStart = 0.01;
-    const int nVarPoints = 11;                  // Ungerade !, min 3
+    const int nVarPoints = 11;   // Ungerade !, min 3
     size_t nMaxOptimalPointReadjustmests = 3;
 
 
     Regression regression;
 
-    std::vector< std::vector< std::array<double, 2> > > variations;
+    std::vector<std::vector<std::array<double, 2>>> variations;
     std::vector<double> varWidth;
     varWidth.resize(N, varWidthStart);
 
-    optPoint minPoint(result, func2min(result));
+    OptPoint minPoint(result, func2min(result));
     bool stop = false;
 
     //std::cout <<"optimizer best fit: " << result[0] << " " << result[1] << std::endl;
@@ -206,9 +205,9 @@ double Minimizer::findFit(size_t interations, double tolerance)
     {
         variations.clear();
 
-        for(size_t j = 0; j < N; j++)  // for every parameter
+        for(size_t j = 0; j < N; j++)   // for every parameter
         {
-            std::vector< std::array<double, 2> > par_variations;
+            std::vector<std::array<double, 2>> par_variations;
 
             // first, find a approx. width
             // y0 + ys = m*x + y0
@@ -216,8 +215,8 @@ double Minimizer::findFit(size_t interations, double tolerance)
             double ys = 1;
             for(size_t i = 0; i < 10 && l == 0;)
             {
-                optPoint varP = minPoint;
-                varP.p[j] = varP.p[j]*(1.0 + varWidth[j]);
+                OptPoint varP = minPoint;
+                varP.p[j] = varP.p[j] * (1.0 + varWidth[j]);
                 considerConstrains(varP.p);
                 varP.fp = func2min(varP.p);
 
@@ -246,8 +245,8 @@ double Minimizer::findFit(size_t interations, double tolerance)
 
             for(int i = 0; i <= nVarPoints; i++)
             {
-                optPoint varP = minPoint;
-                varP.p[j] = varP.p[j] - varWidth[j] + (2*varWidth[j]/nVarPoints)*i;
+                OptPoint varP = minPoint;
+                varP.p[j] = varP.p[j] - varWidth[j] + (2 * varWidth[j] / nVarPoints) * i;
                 considerConstrains(varP.p);
                 varP.fp = func2min(varP.p);
 
@@ -261,8 +260,8 @@ double Minimizer::findFit(size_t interations, double tolerance)
             const auto& regres = regression.quadratic(par_variations);
             if(regres.c > 0)
             {
-                const double xs = -regres.a1/(2*regres.a0);         // scheitelpunkt
-                optPoint varP = minPoint;
+                const double xs = -regres.a1 / (2 * regres.a0);   // scheitelpunkt
+                OptPoint varP = minPoint;
                 varP.p[j] = xs;
                 considerConstrains(varP.p);
                 varP.fp = func2min(varP.p);
@@ -272,13 +271,11 @@ double Minimizer::findFit(size_t interations, double tolerance)
                     stop = false;
                 }
 
-                varWidth[j] = sqrt(ys/regres.a2);
+                varWidth[j] = sqrt(ys / regres.a2);
             }
 
             variations.push_back(par_variations);
         }
-
-
     }
 
     // Calculate sigma
@@ -289,7 +286,7 @@ double Minimizer::findFit(size_t interations, double tolerance)
         {
             // sigma result = (chi2_for_sigma), e.g. for 3 sigma -> chi2_for_sigma=9
             const double chi2_for_sigma = 1;
-            result_sigma[j] = sqrt(chi2_for_sigma/regres.a2);
+            result_sigma[j] = sqrt(chi2_for_sigma / regres.a2);
         }
         else
         {

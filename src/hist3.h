@@ -1,12 +1,13 @@
 
-#include <vector>
-#include <map>
-#include <algorithm>
-#include <numeric>
-#include <limits>
+#pragma once
+
 #include "datatable.h"
 
-#pragma once
+#include <algorithm>
+#include <limits>
+#include <map>
+#include <numeric>
+#include <vector>
 
 namespace nucmath
 {
@@ -15,13 +16,11 @@ class Hist3
 {
 public:
     Hist3();
-    Hist3(double startPosX, double startPosY, double startPosZ,
-          double binWidth, double binHeight, double binDepth);
+    Hist3(double startPosX, double startPosY, double startPosZ, double binWidth, double binHeight, double binDepth);
 
-    void init(double startPosX, double startPosY, double startPosZ,
-              double binWidth, double binHeight, double binDepth);
+    void init(double startPosX, double startPosY, double startPosZ, double binWidth, double binHeight, double binDepth);
 
-    bool add(double x, double y, double z, double c=1.0, bool expand=true);
+    bool add(double x, double y, double z, double c = 1.0, bool expand = true);
 
     void clear();
 
@@ -36,7 +35,7 @@ public:
      * @brief Set internal name. Used for error messages.
      * @param name
      */
-    void setName(const std::string &name);
+    void setName(const std::string& name);
 
 
     /**
@@ -45,8 +44,8 @@ public:
     std::string getName() const { return name; }
 
 
- //   std::tuple<double, double, double, double> data(size_t bin) const;
-//    double data(size_t binX, size_t binY) const;
+    //   std::tuple<double, double, double, double> data(size_t bin) const;
+    //    double data(size_t binX, size_t binY) const;
 
     std::map<std::tuple<double, double, double>, double>::iterator begin() { return histmap.begin(); }
     std::map<std::tuple<double, double, double>, double>::iterator end() { return histmap.end(); }
@@ -55,22 +54,21 @@ public:
 
     std::tuple<double, double, double, double> binToData(std::map<std::tuple<double, double, double>, double>::iterator it) const;
 
-//    std::pair<double, double> getRangeX() const;
-//    std::pair<double, double> getRangeY() const;
+    //    std::pair<double, double> getRangeX() const;
+    //    std::pair<double, double> getRangeY() const;
     std::tuple<double, double, double, double, double, double> getRange() const;
 
-    double getBinWidth() const { return binWidth;}
-    double getBinHeight() const { return binHeight;}
-    double getBinDepth() const { return binDepth;}
+    double getBinWidth() const { return binWidth; }
+    double getBinHeight() const { return binHeight; }
+    double getBinDepth() const { return binDepth; }
 
-//    enum FileFormat {List, Array};
+    //    enum FileFormat {List, Array};
 
-//    bool save(const std::string& path, FileFormat fileFormat) const;
+    //    bool save(const std::string& path, FileFormat fileFormat) const;
 
 private:
-
     //std::vector<std::vector<std::vector<double>>> field;     //! Histogram data
-    double binWidth, binHeight, binDepth;       //! The width of a bin.
+    double binWidth, binHeight, binDepth;   //! The width of a bin.
     std::map<std::tuple<double, double, double>, double> histmap;
 
 

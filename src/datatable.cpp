@@ -1,8 +1,6 @@
 
 #include "datatable.h"
 
-using namespace nucmath;
-
 
 nucmath::DataTable::DataTable(size_t columns)
 {
@@ -10,7 +8,7 @@ nucmath::DataTable::DataTable(size_t columns)
     setNumOfColumns(columns);
 }
 
-DataTable::DataTable(const std::vector<TableRow> &dataTable)
+nucmath::DataTable::DataTable(const std::vector<TableRow>& dataTable)
 {
     reset();
 
@@ -31,35 +29,33 @@ DataTable::DataTable(const std::vector<TableRow> &dataTable)
 }
 
 
-DataTable::~DataTable()
+nucmath::DataTable::~DataTable()
 {
-
-
 }
 
 
-void DataTable::addRow(const TableRow& row)
+void nucmath::DataTable::addRow(const TableRow& row)
 {
     if(row.getNumOfColumns() != nColumns)
         throw std::invalid_argument("DataTable::addRow(const TableRow& row): row.size() != columns");
 
     m_dataTable.push_back(row);
 
-    updateStatistics(m_dataTable.size()-1);
+    updateStatistics(m_dataTable.size() - 1);
 }
 
 
-void DataTable::addRow(const std::vector<double> &row)
+void nucmath::DataTable::addRow(const std::vector<double>& row)
 {
     if(row.size() != nColumns)
         throw std::invalid_argument("DataTable::addRow(const std::vector<double> &row): row.size() != columns");
 
     m_dataTable.push_back(row);
 
-    updateStatistics(m_dataTable.size()-1);
+    updateStatistics(m_dataTable.size() - 1);
 }
 
-void DataTable::setNumOfColumns(size_t columns, double defaultValue)
+void nucmath::DataTable::setNumOfColumns(size_t columns, double defaultValue)
 {
     nColumns = columns;
     for(size_t i = 0; i < m_dataTable.size(); i++)
@@ -77,7 +73,7 @@ void DataTable::setNumOfColumns(size_t columns, double defaultValue)
     }
 }
 
-void DataTable::setNumOfRows(size_t rows, double defaultValue)
+void nucmath::DataTable::setNumOfRows(size_t rows, double defaultValue)
 {
     if(rows > m_dataTable.size())
     {
@@ -98,12 +94,12 @@ void nucmath::DataTable::reset()
     nColumns = 0;
 }
 
-void DataTable::setHeader(const std::string &str)
+void nucmath::DataTable::setHeader(const std::string& str)
 {
     header = str;
 }
 
-bool DataTable::load(const std::string& file)
+bool nucmath::DataTable::load(const std::string& file)
 {
     std::ifstream in(file);
 
@@ -130,7 +126,7 @@ bool DataTable::load(const std::string& file)
             continue;
 
         const auto& last_non_ws = line.find_last_not_of(" \t\n\r\f\v");
-        line.erase(line.begin()+last_non_ws+1, line.end());   // trim leading whitespaces
+        line.erase(line.begin() + last_non_ws + 1, line.end());   // trim leading whitespaces
 
         if(line.size() == 0 || line.at(0) == '#' || line.at(0) == '_')
             continue;
@@ -156,8 +152,6 @@ bool DataTable::load(const std::string& file)
             }
             else
                 format = DATATABLEFORMAT::_Unknown;
-
-
         }
         else
         {
@@ -195,7 +189,7 @@ bool DataTable::load(const std::string& file)
 }
 
 
-bool DataTable::save(const std::string &file) const
+bool nucmath::DataTable::save(const std::string& file) const
 {
     std::ofstream out(file, std::ios_base::out);
 
@@ -216,11 +210,11 @@ bool DataTable::save(const std::string &file) const
             {
                 out << m_dataTable[i].data[k];
 
-                if(k+1 != nColumns)
+                if(k + 1 != nColumns)
                     out << " ";
             }
 
-            if(i+1 != m_dataTable.size())
+            if(i + 1 != m_dataTable.size())
                 out << std::endl;
         }
     }
@@ -231,8 +225,7 @@ bool DataTable::save(const std::string &file) const
 }
 
 
-
-void DataTable::calcMaxMin()
+void nucmath::DataTable::calcMaxMin()
 {
     for(size_t i = 0; i < nColumns; i++)
     {
@@ -241,7 +234,7 @@ void DataTable::calcMaxMin()
 }
 
 
-void DataTable::calcMaxMin(size_t column)
+void nucmath::DataTable::calcMaxMin(size_t column)
 {
     for(size_t i = 0; i < m_dataTable.size(); ++i)
     {
@@ -251,47 +244,47 @@ void DataTable::calcMaxMin(size_t column)
 }
 
 
-void DataTable::sort(size_t channel)
+void nucmath::DataTable::sort(size_t channel)
 {
     std::sort(m_dataTable.begin(), m_dataTable.end(), sort_comparator(channel));
 }
 
-double DataTable::getMax(size_t column) const
-{ 
+double nucmath::DataTable::getMax(size_t column) const
+{
     return m_columnProp[column].max;
 }
 
-double DataTable::getMin(size_t column) const
-{ 
+double nucmath::DataTable::getMin(size_t column) const
+{
     return m_columnProp[column].min;
 }
 
-void DataTable::mul(double factor, size_t dataIndx)
+void nucmath::DataTable::mul(double factor, size_t dataIndx)
 {
     for(size_t i = 0; i < m_dataTable.size(); ++i)
     {
-        m_dataTable[i].data[dataIndx] *=factor;
+        m_dataTable[i].data[dataIndx] *= factor;
     }
 }
 
-void DataTable::add(double shift, size_t column)
+void nucmath::DataTable::add(double shift, size_t column)
 {
     for(size_t i = 0; i < m_dataTable.size(); ++i)
     {
-        m_dataTable[i].data[column]+=shift;
+        m_dataTable[i].data[column] += shift;
     }
 }
 
-double DataTable::calcSumOfSquares(const DataTable& hist, size_t dataIndx) const
+double nucmath::DataTable::calcSumOfSquares(const DataTable& hist, size_t dataIndx) const
 {
     return calcSumOfSquares(hist, dataIndx, getMin(0), getMax(0));
 }
 
-double DataTable::calcSumOfSquares(const DataTable& modelHist, size_t dataIndx, double beginCh, double endCh) const
+double nucmath::DataTable::calcSumOfSquares(const DataTable& modelHist, size_t dataIndx, double beginCh, double endCh) const
 {
     double res = 0.0;
 
-    auto modelData = modelHist.getData();
+    const auto& modelData = modelHist.getData();
     size_t len = std::min<size_t>(this->m_dataTable.size(), modelData.size());
     size_t k = 0;
     for(size_t i = 0; i < len; ++i)
@@ -314,10 +307,10 @@ double DataTable::calcSumOfSquares(const DataTable& modelHist, size_t dataIndx, 
 
             if(sigma_square > 0)
             {
-                res += (y-model_y)*(y-model_y)/sigma_square;
+                res += (y - model_y) * (y - model_y) / sigma_square;
             }
             else
-                res += (y-model_y)*(y-model_y);
+                res += (y - model_y) * (y - model_y);
 
             k++;
         }
@@ -326,20 +319,18 @@ double DataTable::calcSumOfSquares(const DataTable& modelHist, size_t dataIndx, 
     }
 
     if(k != 1)
-        return res/(k-1);
+        return res / (k - 1);
     else
         return 0;
 }
 
-void DataTable::fold(DataTable& folded, float resolution, size_t channel) const
+void nucmath::DataTable::fold(DataTable& folded, float resolution, size_t channel) const
 {
-
     const bool mirrorMode = false;
 
     const size_t len = m_dataTable.size();
     folded.reset();
     folded.setNumOfRows(len);
-
 
     //	std::cout << "Faltung beginnt..." << std::endl;
     //	std::cout << "Aufloesung: " << resolution << std::endl;
@@ -347,15 +338,15 @@ void DataTable::fold(DataTable& folded, float resolution, size_t channel) const
     double progress = 0.00;
     for(size_t ch = 0; ch < len; ch++)
     {
-        if((double)ch/(double)len > progress)
+        if((double)ch / (double)len > progress)
         {
             //	std::cout << "Kanal: "<< ch << "/"<< len << "   " << progress*100 <<" %"<< std::endl;
             progress += 0.05;
         }
 
-        const double fwhm = (ch+1)*resolution;
-        const double sigma = fwhm*FWHM2SIGMA;
-        const int kernelWidth2 = static_cast<int>(ceil(sigma*3)+1);
+        const double fwhm = (ch + 1) * resolution;
+        const double sigma = fwhm * FWHM2SIGMA;
+        const int kernelWidth2 = static_cast<int>(ceil(sigma * 3) + 1);
 
         double integr = 0.0;
 
@@ -363,27 +354,27 @@ void DataTable::fold(DataTable& folded, float resolution, size_t channel) const
         {
             if(mirrorMode)
             {
-                const size_t indx = std::abs(static_cast<int>(ch)+k);
+                const int indx = std::abs(static_cast<int>(ch) + k);
 
                 // das array erweitern, falls zu klein
-                folded.setNumOfRows(indx+1);
+                folded.setNumOfRows(indx + 1);
 
                 const double center = static_cast<double>(k);
-                integr = normalDistIntegral(0, sigma, center-0.5, center+0.5);
-                folded.getData().at(indx).data[channel] += m_dataTable[ch].data[channel]*integr;
+                integr = normalDistIntegral(0, sigma, center - 0.5, center + 0.5);
+                folded.getData().at(indx).data[channel] += m_dataTable[ch].data[channel] * integr;
                 folded.getData().at(indx).data[0] = indx;
             }
             else
             {
-                const int indx = static_cast<int>(ch)+k;
-                if(indx >=0)
+                const int indx = static_cast<int>(ch) + k;
+                if(indx >= 0)
                 {
                     // das array erweitern, falls zu klein
-                    folded.setNumOfRows(indx+1);
+                    folded.setNumOfRows(indx + 1);
 
                     const double center = static_cast<double>(k);
-                    integr = normalDistIntegral(0, sigma, center-0.5, center+0.5);
-                    folded.getData().at(indx).data[channel] += m_dataTable[ch].data[channel]*integr;
+                    integr = normalDistIntegral(0, sigma, center - 0.5, center + 0.5);
+                    folded.getData().at(indx).data[channel] += m_dataTable[ch].data[channel] * integr;
                     folded.getData().at(indx).data[0] = indx;
                 }
             }
@@ -393,10 +384,9 @@ void DataTable::fold(DataTable& folded, float resolution, size_t channel) const
         }
 
         //std::cout << integrSum << std::endl;
-
     }
 
-    for(int j = 0; j < nColumns; j++)
+    for(size_t j = 0; j < nColumns; j++)
         folded.calcMaxMin(j);
 
     //	std::cout << " Max: " << folded.getMax(1) << std::endl;
@@ -404,12 +394,12 @@ void DataTable::fold(DataTable& folded, float resolution, size_t channel) const
     //	std::cout << "Faltung abgeschlossen." << std::endl;
 }
 
-double DataTable::getSum(size_t column)
+double nucmath::DataTable::getSum(size_t column)
 {
     double result = 0.0;
     for(size_t i = 0; i < m_dataTable.size(); ++i)
     {
-        result+= m_dataTable[i].data[column];
+        result += m_dataTable[i].data[column];
     }
 
     return result;

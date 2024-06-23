@@ -1,10 +1,11 @@
 
-#include <vector>
+#pragma once
+
+#include <algorithm>
 #include <limits>
 #include <sstream>
-#include <algorithm>
+#include <vector>
 
-#pragma once
 
 namespace nucmath
 {
@@ -16,7 +17,7 @@ class TableRow
 {
 public:
     TableRow(size_t columns, double defaultValue = 0.0);
-    TableRow(const std::vector<double> &row);
+    TableRow(const std::vector<double>& row);
     TableRow(const TableRow& row);
 
     void reset();
@@ -35,10 +36,10 @@ public:
      * @param factor
      * @return
      */
-    TableRow operator * (double factor) const;
-    TableRow& operator += (double shift);
-    const double& operator [] (size_t column) const;
-    double& operator [] (size_t column);
+    TableRow operator*(double factor) const;
+    TableRow& operator+=(double shift);
+    const double& operator[](size_t column) const;
+    double& operator[](size_t column);
 
     double getMax();
     double getMin();

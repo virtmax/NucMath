@@ -1,4 +1,4 @@
-#include "../catch.hpp"
+#include "catch.hpp"
 
 #include "minimizerdownhillsimplex.h"
 #include "functions.h"
@@ -38,8 +38,8 @@ TEST_CASE("Downhill simplex optimization")
                                                       max_interations,
                                                       number_of_seed_points);
 
-            REQUIRE(result[0] == Approx(1).epsilon(0.01));
-            REQUIRE(result[1] == Approx(1).epsilon(0.01));
+            REQUIRE(result[0] == Catch::Approx(1).epsilon(0.01));
+            REQUIRE(result[1] == Catch::Approx(1).epsilon(0.01));
         }
     }
 }

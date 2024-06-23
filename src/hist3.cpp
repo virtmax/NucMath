@@ -8,8 +8,7 @@ nucmath::Hist3::Hist3()
     binDepth = 1.0;
 }
 
-nucmath::Hist3::Hist3(double startPosX, double startPosY, double startPosZ,
-                      double binWidth, double binHeight, double binDepth)
+nucmath::Hist3::Hist3(double startPosX, double startPosY, double startPosZ, double binWidth, double binHeight, double binDepth)
 {
     init(startPosX, startPosY, startPosZ, binWidth, binHeight, binDepth);
 }
@@ -27,8 +26,7 @@ void nucmath::Hist3::clear()
     changed = true;
 }
 
-void nucmath::Hist3::init(double startPosX, double startPosY, double startPosZ,
-                          double binWidth, double binHeight, double binDepth)
+void nucmath::Hist3::init(double startPosX, double startPosY, double startPosZ, double binWidth, double binHeight, double binDepth)
 {
     histmap.clear();
     this->startPosX = startPosX;
@@ -60,9 +58,9 @@ bool nucmath::Hist3::add(double x, double y, double z, double c, bool expand)
     }
     changed = true;
 
-    int binZ = static_cast<size_t>(floor(z/binDepth));
-    int binY = static_cast<size_t>(floor(y/binHeight));
-    int binX = static_cast<size_t>(floor(x/binWidth));
+    double binZ = floor(z / binDepth);
+    double binY = floor(y / binHeight);
+    double binX = floor(x / binWidth);
 
     histmap[{binX, binY, binZ}] += c;
 
@@ -73,8 +71,8 @@ bool nucmath::Hist3::add(double x, double y, double z, double c, bool expand)
     endPosY = std::max(endPosY, y + binHeight);
     endPosZ = std::max(endPosZ, z + binDepth);
 
-
-/*
+    expand = false;
+    /*
     // expand to smaller z values
     size_t binsToAddZ = 0;
     if(z < startPosZ && expand)
@@ -104,7 +102,7 @@ bool nucmath::Hist3::add(double x, double y, double z, double c, bool expand)
     endPosX = startPosX + (binX+1)*binWidth;
 */
 
-/*
+    /*
     // expand to smaller z values
     size_t binsToAddZ = 0;
     if(z < startPosZ && expand)
@@ -210,19 +208,17 @@ std::tuple<double, double, double, double> nucmath::Hist3::data(size_t bin) cons
 bool nucmath::Hist3::isChanged(bool leaveChanged)
 {
     bool temp = changed;
-    changed = (leaveChanged==true) ? true : false;
+    changed = (leaveChanged == true) ? true : false;
     return temp;
 }
 
 std::tuple<double, double, double, double> nucmath::Hist3::binToData(std::map<std::tuple<double, double, double>, double>::iterator it) const
 {
     const auto& [bx, by, bz] = it->first;
-    return {(bx+0.5)*binWidth, (by+0.5)*binHeight, (bz+0.5)*binDepth, it->second};
+    return {(bx + 0.5) * binWidth, (by + 0.5) * binHeight, (bz + 0.5) * binDepth, it->second};
 }
 
 std::tuple<double, double, double, double, double, double> nucmath::Hist3::getRange() const
 {
-    return {startPosX, endPosX,
-            startPosY, endPosY,
-            startPosZ, endPosZ};
+    return {startPosX, endPosX, startPosY, endPosY, startPosZ, endPosZ};
 }

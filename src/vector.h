@@ -3,10 +3,9 @@
 
 #pragma once
 
-#include <vector>
-
 #include "utils.h"
 
+#include <vector>
 
 namespace nucmath
 {
@@ -16,6 +15,7 @@ class Vector
 {
 public:
     Vector(size_t numElements);
+    Vector(const Vector<T>& vec);
     Vector(const std::vector<T>& elements);
 
     size_t dim() const;
@@ -23,27 +23,27 @@ public:
     const std::vector<T>& rawData() const;
     std::vector<T>& rawData();
 
-    const T& operator() (size_t index) const;
-    T& operator() (size_t index);
+    const T& operator()(size_t index) const;
+    T& operator()(size_t index);
 
-    Vector<T>& operator =  (const Vector<T>& vec);
+    Vector<T>& operator=(const Vector<T>& vec);
 
-    Vector<T> operator + (const Vector<T>& vec) const;
-    Vector<T> operator - (const Vector<T>& vec) const;
-    Vector<T> operator - () const	;
-    T         operator * (const Vector<T>& vec) const;
-    Vector<T> operator * (const T scalar) const;
-    Vector<T> operator / (const T scalar) const;
+    Vector<T> operator+(const Vector<T>& vec) const;
+    Vector<T> operator-(const Vector<T>& vec) const;
+    Vector<T> operator-() const;
+    T operator*(const Vector<T>& vec) const;
+    Vector<T> operator*(const T scalar) const;
+    Vector<T> operator/(const T scalar) const;
 
-    Vector<T>& operator += (const Vector<T>& vec);
-    Vector<T>& operator -= (const Vector<T>& vec);
-    Vector<T>& operator *= (const T scalar);
-    Vector<T>& operator /= (const T scalar);
+    Vector<T>& operator+=(const Vector<T>& vec);
+    Vector<T>& operator-=(const Vector<T>& vec);
+    Vector<T>& operator*=(const T scalar);
+    Vector<T>& operator/=(const T scalar);
 
-    bool operator == (const Vector<T>& vec) const;
-    bool operator == (const std::vector<T>& vec) const;
-    bool operator != (const Vector<T>& vec) const;
-    bool operator != (const std::vector<T>& vec) const;
+    bool operator==(const Vector<T>& vec) const;
+    bool operator==(const std::vector<T>& vec) const;
+    bool operator!=(const Vector<T>& vec) const;
+    bool operator!=(const std::vector<T>& vec) const;
 
     double length() const;
 
@@ -55,57 +55,63 @@ private:
 
 }
 
-template<typename T>
+template <typename T>
 nucmath::Vector<T>::Vector(size_t numElements)
 {
     data.assign(numElements, 0.0);
 }
 
-template<typename T>
+template <typename T>
+nucmath::Vector<T>::Vector(const Vector<T>& vec)
+{
+    *this = vec;
+}
+
+template <typename T>
 nucmath::Vector<T>::Vector(const std::vector<T>& elements)
 {
     this->data = elements;
 }
 
-template<typename T>
+template <typename T>
 size_t nucmath::Vector<T>::dim() const
 {
     return data.size();
 }
 
-template<typename T>
+template <typename T>
 const std::vector<T>& nucmath::Vector<T>::rawData() const
 {
     return data;
 }
 
-template<typename T>
+template <typename T>
 std::vector<T>& nucmath::Vector<T>::rawData()
 {
     return data;
 }
 
-template<typename T>
-const T& nucmath::Vector<T>::operator() (size_t index) const
+template <typename T>
+const T& nucmath::Vector<T>::operator()(size_t index) const
 {
     return data.at(index);
 }
 
-template<typename T>
-T& nucmath::Vector<T>::operator() (size_t index)
+template <typename T>
+T& nucmath::Vector<T>::operator()(size_t index)
 {
     return data.at(index);
 }
 
-template<typename T>
-nucmath::Vector<T>& nucmath::Vector<T>::operator = (const Vector<T>& vec)
+template <typename T>
+nucmath::Vector<T>& nucmath::Vector<T>::operator=(const Vector<T>& vec)
 {
     data = vec.rawData();
     return *this;
 }
 
-template<typename T>
-nucmath::Vector<T> nucmath::Vector<T>::operator + (const Vector<T>& vec) const
+template <typename T>
+nucmath::Vector<T> nucmath::Vector<T>::operator+(const Vector<T>& vec) const
 {
     if(vec.dim() != dim())
         throw std::invalid_argument("Vector<T>::operator + (const Vector<T>& vec): vec has wrong dimensions.");
@@ -119,8 +125,8 @@ nucmath::Vector<T> nucmath::Vector<T>::operator + (const Vector<T>& vec) const
     return temp;
 }
 
-template<typename T>
-nucmath::Vector<T> nucmath::Vector<T>::operator - (const Vector<T>& vec) const
+template <typename T>
+nucmath::Vector<T> nucmath::Vector<T>::operator-(const Vector<T>& vec) const
 {
     if(vec.dim() != dim())
         throw std::invalid_argument("Vector<T>::operator - (const Vector<T>& vec): vec has wrong dimensions.");
@@ -134,8 +140,8 @@ nucmath::Vector<T> nucmath::Vector<T>::operator - (const Vector<T>& vec) const
     return temp;
 }
 
-template<typename T>
-nucmath::Vector<T> nucmath::Vector<T>::operator - () const
+template <typename T>
+nucmath::Vector<T> nucmath::Vector<T>::operator-() const
 {
     Vector<T> temp(dim());
     for(size_t i = 0; i < data.size(); i++)
@@ -146,8 +152,8 @@ nucmath::Vector<T> nucmath::Vector<T>::operator - () const
     return temp;
 }
 
-template<typename T>
-T nucmath::Vector<T>::operator * (const Vector<T>& vec) const
+template <typename T>
+T nucmath::Vector<T>::operator*(const Vector<T>& vec) const
 {
     if(vec.dim() != dim())
         throw std::invalid_argument("Matrix<T>::operator == (const Matrix& mat): mat has wrong dimensions.");
@@ -155,38 +161,38 @@ T nucmath::Vector<T>::operator * (const Vector<T>& vec) const
     double scalar = 0.0;
     for(size_t i = 0; i < data.size(); i++)
     {
-        scalar += data[i]*vec(i);
+        scalar += data[i] * vec(i);
     }
 
     return scalar;
 }
 
-template<typename T>
-nucmath::Vector<T> nucmath::Vector<T>::operator * (const T scalar) const
+template <typename T>
+nucmath::Vector<T> nucmath::Vector<T>::operator*(const T scalar) const
 {
     Vector<T> temp(dim());
     for(size_t i = 0; i < data.size(); i++)
     {
-        temp(i) = data[i]*scalar;
+        temp(i) = data[i] * scalar;
     }
 
     return temp;
 }
 
-template<typename T>
-nucmath::Vector<T> nucmath::Vector<T>::operator / (const T scalar) const
+template <typename T>
+nucmath::Vector<T> nucmath::Vector<T>::operator/(const T scalar) const
 {
     Vector<T> temp(dim());
     for(size_t i = 0; i < data.size(); i++)
     {
-        temp(i) = data[i]/scalar;
+        temp(i) = data[i] / scalar;
     }
 
     return temp;
 }
 
-template<typename T>
-nucmath::Vector<T>& nucmath::Vector<T>::operator += (const Vector<T>& vec)
+template <typename T>
+nucmath::Vector<T>& nucmath::Vector<T>::operator+=(const Vector<T>& vec)
 {
     if(vec.dim() != dim())
         throw std::invalid_argument("Vector<T>::operator += (const Vector<T>& vec): vec has wrong dimensions.");
@@ -199,8 +205,8 @@ nucmath::Vector<T>& nucmath::Vector<T>::operator += (const Vector<T>& vec)
     return *this;
 }
 
-template<typename T>
-nucmath::Vector<T>& nucmath::Vector<T>::operator -= (const Vector<T>& vec)
+template <typename T>
+nucmath::Vector<T>& nucmath::Vector<T>::operator-=(const Vector<T>& vec)
 {
     if(vec.dim() != dim())
         throw std::invalid_argument("Vector<T>::operator -= (const Vector<T>& vec): vec has wrong dimensions.");
@@ -213,8 +219,8 @@ nucmath::Vector<T>& nucmath::Vector<T>::operator -= (const Vector<T>& vec)
     return *this;
 }
 
-template<typename T>
-nucmath::Vector<T>& nucmath::Vector<T>::operator *= (const T scalar)
+template <typename T>
+nucmath::Vector<T>& nucmath::Vector<T>::operator*=(const T scalar)
 {
     for(size_t i = 0; i < data.size(); i++)
     {
@@ -224,8 +230,8 @@ nucmath::Vector<T>& nucmath::Vector<T>::operator *= (const T scalar)
     return *this;
 }
 
-template<typename T>
-nucmath::Vector<T>& nucmath::Vector<T>::operator /= (const T scalar)
+template <typename T>
+nucmath::Vector<T>& nucmath::Vector<T>::operator/=(const T scalar)
 {
     for(size_t i = 0; i < data.size(); i++)
     {
@@ -235,8 +241,8 @@ nucmath::Vector<T>& nucmath::Vector<T>::operator /= (const T scalar)
     return *this;
 }
 
-template<typename T>
-bool nucmath::Vector<T>::operator == (const Vector<T>& vec) const
+template <typename T>
+bool nucmath::Vector<T>::operator==(const Vector<T>& vec) const
 {
     if(vec.dim() != dim())
         throw std::invalid_argument("nucmath::Vector<T>::operator == (const Vector<T>& vec): vec has wrong dimension.");
@@ -250,8 +256,8 @@ bool nucmath::Vector<T>::operator == (const Vector<T>& vec) const
     return true;
 }
 
-template<typename T>
-bool nucmath::Vector<T>::operator == (const std::vector<T>& vec) const
+template <typename T>
+bool nucmath::Vector<T>::operator==(const std::vector<T>& vec) const
 {
     if(vec.size() != dim())
         throw std::invalid_argument("nucmath::Vector<T>::operator == (const std::vector<T>& vec): vec has wrong size.");
@@ -265,8 +271,8 @@ bool nucmath::Vector<T>::operator == (const std::vector<T>& vec) const
     return true;
 }
 
-template<typename T>
-bool nucmath::Vector<T>::operator != (const Vector<T>& vec) const
+template <typename T>
+bool nucmath::Vector<T>::operator!=(const Vector<T>& vec) const
 {
     if(vec.dim() != dim())
         throw std::invalid_argument("Vector<T>::operator != (const Vector<T>& vec): mat has wrong dimension.");
@@ -274,8 +280,8 @@ bool nucmath::Vector<T>::operator != (const Vector<T>& vec) const
     return !this->operator==(vec);
 }
 
-template<typename T>
-bool nucmath::Vector<T>::operator != (const std::vector<T>& vec) const
+template <typename T>
+bool nucmath::Vector<T>::operator!=(const std::vector<T>& vec) const
 {
     if(vec.size() != dim())
         throw std::invalid_argument("Vector<T>::operator != (const std::vector<T>& vec): vec has wrong size.");
@@ -283,19 +289,19 @@ bool nucmath::Vector<T>::operator != (const std::vector<T>& vec) const
     return !this->operator==(vec);
 }
 
-template<typename T>
+template <typename T>
 double nucmath::Vector<T>::length() const
 {
     double scalar = 0.0;
     for(size_t i = 0; i < data.size(); i++)
     {
-        scalar += data[i]*data[i];
+        scalar += data[i] * data[i];
     }
 
     return std::sqrt(scalar);
 }
 
-template<typename T>
+template <typename T>
 void nucmath::Vector<T>::normalize()
 {
     const double len = length();

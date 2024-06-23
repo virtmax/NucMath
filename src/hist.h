@@ -6,15 +6,17 @@
 
 */
 
-#include <vector>
-#include <algorithm>
-#include <numeric>
-#include <limits>
-#include "datatable.h"
-#include "utils.h"
-#include "functions.h"
-
 #pragma once
+
+#include "datatable.h"
+#include "functions.h"
+#include "utils.h"
+
+#include <algorithm>
+#include <limits>
+#include <numeric>
+#include <vector>
+
 
 namespace nucmath
 {
@@ -45,7 +47,7 @@ public:
      * @param y The amount of the value x that should be added to the histogram.
      * @param expand Have to be true, if the histogram should add new bins, if x is bigger than histogram size.
      */
-    bool add(double x, double y=1.0, bool expand=true);
+    bool add(double x, double y = 1.0, bool expand = true);
 
 
     /**
@@ -56,21 +58,25 @@ public:
      * @param xWidth
      * @param binWidth
      */
-    bool create(DataTable &datatable, size_t column, double binWidth);
+    bool create(const DataTable& datatable, size_t column, double binWidth);
 
 
     /**
      *  @brief: Create a Histogram from a histogram contained inside the DataTable container.
-     *
+     *  @param database
+     *  @param xColumn the index of the column in the database that should be used as x coordinate
+     *  @param yColumn the index of the column in the database that should be accumulated in the histogram
+     *  @param xColumnWidth the distance between values for the xColumn
+     *  @param binWidth the width of the bins in the created histogram
      */
-    bool create(DataTable &datatable, size_t xColumn, size_t yColumn, double xWidth, double binWidth);
+    bool create(const DataTable& datatable, size_t xColumn, size_t yColumn, double xColumnWidth, double binWidth);
 
 
     /**
      * @brief Set internal name. Used for error messages.
      * @param name
      */
-    void setName(const std::string &name);
+    void setName(const std::string& name);
 
 
     /**
@@ -95,8 +101,7 @@ public:
     bool setBinWidth(double width);
 
 
-
-	double getBinWidth() const;
+    double getBinWidth() const;
 
 
     std::pair<double, double> getRangeOfInsertedData() const;
@@ -111,7 +116,7 @@ public:
      */
     size_t nBins() const;
 
-    Hist& operator=(const Hist & hist);
+    Hist& operator=(const Hist& hist);
 
 
     /**
@@ -132,14 +137,14 @@ public:
      * @brief Get maximal value stored in a bin.
      * @return
      */
-	double max();
+    double max();
 
 
     /**
      * @brief Get minimal value stored in a bin.
      * @return
      */
-	double min();
+    double min();
 
 
     /**
@@ -169,7 +174,7 @@ public:
     double centerOfMass();
 
 
-/*
+    /*
     double mean_x() const;
 */
 
@@ -192,7 +197,7 @@ public:
 
     void truncateZeroBins();
 
-	void clear();
+    void clear();
 
     /**
     * @brief Get Cumulative Distribution Function
@@ -216,7 +221,7 @@ public:
 
     std::pair<double, double> dataFromX(double x) const;
 
-    Hist operator* (const double factor) const;
+    Hist operator*(const double factor) const;
 
     std::pair<double, double> getRange() const;
 
@@ -227,7 +232,7 @@ public:
     std::vector<double>::iterator end() { return field.end(); }
 
     const Hist& getCopy() const { return *this; }
-    void setCopy(const Hist &hist);
+    void setCopy(const Hist& hist);
 
     void load(const std::string& path);
     void save(const std::string& path) const;
@@ -237,8 +242,7 @@ public:
     Hist getUnfolded(double sigma);
 
 private:
-
-    std::vector<double> field;     //! Histogram data
+    std::vector<double> field;   //! Histogram data
     double binWidth;             //! The width of on bin.
 
     std::vector<bool> isSetData;

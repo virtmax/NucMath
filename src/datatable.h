@@ -4,32 +4,35 @@
 
  */
 
-#include <string>
-#include <vector>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <array>
-#include <regex>
-#include <array>
-#include <cmath>
-#include <limits>
-#include <math.h>
-
-
-#include "constants.h"
-#include "utils.h"
-#include "integration.h"
-#include "stringoperations.h"
-
-#include "tablerow.h"
 
 #pragma once
+
+#include "constants.h"
+#include "integration.h"
+#include "stringoperations.h"
+#include "tablerow.h"
+#include "utils.h"
+
+#include <array>
+#include <cmath>
+#include <fstream>
+#include <iostream>
+#include <limits>
+#include <math.h>
+#include <regex>
+#include <sstream>
+#include <string>
+#include <vector>
 
 namespace nucmath
 {
 
-enum class DATATABLEFORMAT {_Unknown, Standard, MathematicaTable2};
+enum class DATATABLEFORMAT
+{
+    _Unknown,
+    Standard,
+    MathematicaTable2
+};
 
 class ColumnProperties
 {
@@ -46,7 +49,6 @@ public:
 class DataTable
 {
 private:
-
     size_t nColumns;
 
     std::vector<TableRow> m_dataTableOriginal;
@@ -54,16 +56,17 @@ private:
     std::vector<ColumnProperties> m_columnProp;
 
     DATATABLEFORMAT format;
+
 public:
     DataTable(size_t columns = 2);
     DataTable(const std::vector<TableRow>& dataTable);
     ~DataTable();
 
-    bool load(const std::string &file);
-    bool save(const std::string &file) const;
+    bool load(const std::string& file);
+    bool save(const std::string& file) const;
 
     void addRow(const TableRow& row);
-    void addRow(const std::vector<double> &row);
+    void addRow(const std::vector<double>& row);
 
     void mul(double factor, size_t column);
     void add(double shift, size_t column);
@@ -73,7 +76,7 @@ public:
     void setNumOfRows(size_t rows, double defaultValue = 0.0);
     void reset();
 
-    void setHeader(const std::string &str);
+    void setHeader(const std::string& str);
 
     // Faltet die Daten mit der Normalverteilung
     void fold(DataTable& folded, float resolution, size_t column) const;
@@ -102,7 +105,6 @@ public:
     std::vector<TableRow>& getData() { return m_dataTable; }
 
 private:
-
     void updateStatistics(size_t newRowIndex);
 
     /**
@@ -110,8 +112,8 @@ private:
          */
     struct sort_comparator
     {
-        sort_comparator(size_t column){ this->column = column; }
-        bool operator()(const TableRow &a, const TableRow &b) { return (a.data[column] < b.data[column]); }
+        sort_comparator(size_t column) { this->column = column; }
+        bool operator()(const TableRow& a, const TableRow& b) { return (a.data[column] < b.data[column]); }
         size_t column;
     };
 

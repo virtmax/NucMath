@@ -3,22 +3,20 @@
 
 #pragma once
 
+#include "minimizerdownhillsimplex.h"
+#include "minimizerrandom.h"
+#include "vector.h"
 
-#include <vector>
-#include <iostream>
 #include <algorithm>
 #include <array>
 #include <chrono>
 #include <functional>
+#include <iostream>
 #include <string>
-
-#include "vector.h"
-#include "minimizerrandom.h"
-#include "minimizerdownhillsimplex.h"
+#include <vector>
 
 namespace nucmath
 {
-
 
 class Minimizer
 {
@@ -26,19 +24,23 @@ public:
     Minimizer();
     ~Minimizer();
 
-    enum MinimizerMethode {Random = 0, DownhillSimplex };
+    enum MinimizerMethode
+    {
+        Random = 0,
+        DownhillSimplex
+    };
 
-    void setData(const std::vector<double> &inputs, const std::vector<double> &y);
-    void setData(const std::vector<nucmath::Vector<double>> &inputs, const std::vector<double> &y);
-    void setWeights(const std::vector<double> &weights);
+    void setData(const std::vector<double>& inputs, const std::vector<double>& y);
+    void setData(const std::vector<nucmath::Vector<double>>& inputs, const std::vector<double>& y);
+    void setWeights(const std::vector<double>& weights);
 
     void setNumberOfSeedPoints(size_t number_of_seed_points);
 
-   // TODO: void setDataUncertainty()
-    void setModelFunction(MODELFUNC &modelFunction);
-    void setInitialPointsAndConstrains(const std::vector< std::array<double,3> > &initial_p);
+    // TODO: void setDataUncertainty()
+    void setModelFunction(MODELFUNC& modelFunction);
+    void setInitialPointsAndConstrains(const std::vector<std::array<double, 3>>& initial_p);
 
-    void setParameterNames(const std::vector<std::string> &names);
+    void setParameterNames(const std::vector<std::string>& names);
 
     double findFit(size_t interations, double tolerance);
 
@@ -54,9 +56,8 @@ public:
     OPTIMIZER_RETURN_TYPE getReturnType() { return returnType; };
 
 private:
-
     std::vector<nucmath::Vector<double>> inputs;
-    std::vector<double> y;    // data
+    std::vector<double> y;   // data
     std::vector<double> weights;
 
     size_t number_of_seed_points;
@@ -67,14 +68,11 @@ private:
 
     std::mt19937 rand_gen;
 
-    std::vector< std::array<double,3> > initial_points;
+    std::vector<std::array<double, 3>> initial_points;
     std::vector<std::string> param_names;
     std::vector<double> result;
     std::vector<double> result_sigma;
 
-    OPTIMIZER_RETURN_TYPE returnType    {OPTIMIZER_RETURN_TYPE::Unknown};
+    OPTIMIZER_RETURN_TYPE returnType {OPTIMIZER_RETURN_TYPE::Unknown};
 };
-
 }
-
-

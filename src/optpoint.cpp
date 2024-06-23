@@ -1,4 +1,2 @@
 
 #include "optpoint.h"
-
-

@@ -8,7 +8,11 @@
 
 namespace nucmath
 {
-enum InterpolationMode { Linear = 0, Steffen };
+enum InterpolationMode
+{
+    Linear = 0,
+    Steffen
+};
 
 class Interpolation
 {
@@ -22,16 +26,15 @@ public:
     void setData(const std::vector<double>& data);
 
 private:
-
     DataTable m_dataTable;
     std::vector<std::pair<double, double>> m_data;
 
     InterpolationMode m_mode {Linear};
 
 
-    std::vector<std::pair<double,double>> LinearInterpolation();
+    std::vector<std::pair<double, double>> LinearInterpolation();
 
-    std::vector<std::pair<double,double>> SteffenInterpolation();
+    std::vector<std::pair<double, double>> SteffenInterpolation();
 };
 
 }

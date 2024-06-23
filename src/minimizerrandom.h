@@ -1,15 +1,15 @@
-#ifndef MINIMIZER_RANDOM_H
-#define MINIMIZER_RANDOM_H
 
-#include <random>
+#pragma once
+
 #include <array>
+#include <random>
 
 template <size_t N>
-double random_optimization(std::function<double (const std::array<double, N> &)> chi2func,
-                           const std::array<double, N> &initial_p,
-                           const std::array<std::array<double, 2>, N> &constrains,
-                           std::array<double, N> &result_p,
-                           std::array<double, N> &result_sigma,
+double random_optimization(std::function<double(const std::array<double, N>&)> chi2func,
+                           const std::array<double, N>& initial_p,
+                           const std::array<std::array<double, 2>, N>& constrains,
+                           std::array<double, N>& result_p,
+                           std::array<double, N>& result_sigma,
                            size_t max_interations)
 {
 
@@ -23,16 +23,16 @@ double random_optimization(std::function<double (const std::array<double, N> &)>
     std::array<double, N> sigma;
     double cur_sigmaDiff = 4;   // sigma = sqrt(9) = 3
     const double sigmaDiff = 1;
-    for (size_t i = 0; i < N; i++)
+    for(size_t i = 0; i < N; i++)
     {
         sigma[i] = (constrains[i][1] - constrains[i][0]) / 4.0;
     }
 
     size_t k = 0;
-    while (k++ < max_interations)
+    while(k++ < max_interations)
     {
 
-        for (size_t i = 0; i < N; i++)
+        for(size_t i = 0; i < N; i++)
         {
             do
             {
@@ -40,7 +40,7 @@ double random_optimization(std::function<double (const std::array<double, N> &)>
                 p[i] = ndistr(rand_gen);
 
                 //   std::cout << "p: A="<<p[0] << " mu="<<p[1] << " sigma=" << p[2] << std::endl;
-            } while (p[i] > constrains[i][1] || p[i] < constrains[i][0]);
+            } while(p[i] > constrains[i][1] || p[i] < constrains[i][0]);
         }
 
 
@@ -58,10 +58,9 @@ double random_optimization(std::function<double (const std::array<double, N> &)>
         }*/
 
 
-
-        if (min_chi2 > new_chi2)
+        if(min_chi2 > new_chi2)
         {
-            for (size_t i = 0; i < N; i++)
+            for(size_t i = 0; i < N; i++)
             {
                 sigma[i] = fabs(best_p[i] - p[i]);
             }
@@ -72,13 +71,12 @@ double random_optimization(std::function<double (const std::array<double, N> &)>
             cur_sigmaDiff = sigmaDiff;
 
 
-
             //  std::cout << "p: A="<<p[0] << " mu="<<p[1] << " sigma=" << p[2] << std::endl;
         }
     }
 
 
-    for (size_t i = 0; i < N; i++)
+    for(size_t i = 0; i < N; i++)
     {
         result_sigma[i] = sigma[i];
     }
@@ -86,5 +84,3 @@ double random_optimization(std::function<double (const std::array<double, N> &)>
 
     return min_chi2;
 }
-
-#endif // MINIMIZER_RANDOM_H

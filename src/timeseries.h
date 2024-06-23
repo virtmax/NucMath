@@ -1,7 +1,8 @@
 
-#include "hist.h"
 
 #pragma once
+
+#include "hist.h"
 
 namespace nucmath
 {
@@ -30,9 +31,8 @@ public:
     bool save(const std::string& path) const;
 
 private:
-
     double lastTimeValue;
-	double firstTimeValue;
+    double firstTimeValue;
 
     Hist entriesPerBin;
     Hist hist;

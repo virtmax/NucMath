@@ -3,23 +3,21 @@
 
 
 nucmath::OPTIMIZER_RETURN_TYPE nucmath::downhill_simplex_optimization(FUNC2MIN opt_func,
-                                     const std::vector< std::array<double,3> > &initial_p,
-                                     std::vector<double> &result_p,
-                                     double tolerance,
-                                     size_t max_interations,
-                                     size_t number_of_seed_points
-                                     )
+                                                                      const std::vector<std::array<double, 3>>& initial_p,
+                                                                      std::vector<double>& result_p,
+                                                                      double tolerance,
+                                                                      size_t max_interations,
+                                                                      size_t number_of_seed_points)
 {
     const size_t N = initial_p.size();
     const size_t NP = N + 1;
     const double a = 1.0, b = 2.0, c = 0.5, d = 0.5;
     //const double double_max = std::numeric_limits<double>::max();
-    OPTIMIZER_RETURN_TYPE ret;
+    OPTIMIZER_RETURN_TYPE ret = OPTIMIZER_RETURN_TYPE::Unknown;
 
 
     // internal function used to set a proposed optimization point back into the constrained region.
-    std::function<void (std::vector<double> &)> considerConstrains =
-            [&](std::vector<double> &p)
+    std::function<void(std::vector<double>&)> considerConstrains = [&](std::vector<double>& p)
     {
         for(size_t j = 0; j < N; j++)
         {
@@ -35,7 +33,7 @@ nucmath::OPTIMIZER_RETURN_TYPE nucmath::downhill_simplex_optimization(FUNC2MIN o
         }
     };
 
-/*
+    /*
     std::vector<optPoint> trusted_region_points;    // only points with "fp < bestpoint.fp+9"
     std::function<void (optPoint &)> saveTrustedPoints =
             [&](optPoint &p)
@@ -59,27 +57,26 @@ nucmath::OPTIMIZER_RETURN_TYPE nucmath::downhill_simplex_optimization(FUNC2MIN o
     };
 */
 
-    std::vector<optPoint> points;
-    for(size_t i= 0; i < NP; i++)
-        points.push_back(optPoint(N));
+    std::vector<OptPoint> points;
+    for(size_t i = 0; i < NP; i++)
+        points.push_back(OptPoint(N));
 
     result_p.clear();
     result_p.resize(N, 0);
 
-    optPoint x0(N); // centroid
-    optPoint xr(N);	// reflected point
-    optPoint xe(N);	// expanded point
-    optPoint xc(N);	// contracted point
+    OptPoint x0(N);   // centroid
+    OptPoint xr(N);   // reflected point
+    OptPoint xe(N);   // expanded point
+    OptPoint xc(N);   // contracted point
 
     std::vector<double> start_p;
-    for(size_t i= 0; i < initial_p.size(); i++)
+    for(size_t i = 0; i < initial_p.size(); i++)
     {
         start_p.push_back(initial_p[i][0]);
     }
 
-
-    unsigned seed1 = std::chrono::system_clock::now().time_since_epoch().count();
-    std::mt19937 rand_gen(seed1);
+    const auto startseed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::mt19937 rand_gen(static_cast<unsigned int>(startseed));
 
 
     // Generate initial points
@@ -89,8 +86,8 @@ nucmath::OPTIMIZER_RETURN_TYPE nucmath::downhill_simplex_optimization(FUNC2MIN o
     points[0].fp = opt_func(start_p);
 
     // create at least 5 points per parameter
-    if(number_of_seed_points < NP*5)
-        number_of_seed_points = NP*5;
+    if(number_of_seed_points < NP * 5)
+        number_of_seed_points = NP * 5;
 
     // create initial points on a grid over the parameter space
     std::vector<double> initial_points;
@@ -104,10 +101,10 @@ nucmath::OPTIMIZER_RETURN_TYPE nucmath::downhill_simplex_optimization(FUNC2MIN o
         }
 
         const double temp_fp = opt_func(initial_points);
-        if(points[NP-1].fp > temp_fp)
+        if(points[NP - 1].fp > temp_fp)
         {
-            points[NP-1].p = initial_points;
-            points[NP-1].fp = temp_fp;
+            points[NP - 1].p = initial_points;
+            points[NP - 1].fp = temp_fp;
             std::sort(points.begin(), points.end());
         }
     }
@@ -117,7 +114,7 @@ nucmath::OPTIMIZER_RETURN_TYPE nucmath::downhill_simplex_optimization(FUNC2MIN o
     size_t loop_counter = 0;
     while(!done)
     {
-        std::sort(points.begin(), points.end());	// 1 2 3 4 5
+        std::sort(points.begin(), points.end());   // 1 2 3 4 5
 
         // calculate the centroid except the worst
         x0.p = std::vector<double>(N, 0);
@@ -134,18 +131,18 @@ nucmath::OPTIMIZER_RETURN_TYPE nucmath::downhill_simplex_optimization(FUNC2MIN o
         // calculate reflected point xr = x0 + a(x0-xWorst)
         for(size_t j = 0; j < N; j++)
         {
-            xr.p[j] = x0.p[j] + a*(x0.p[j] - points[NP-1].p[j]);
+            xr.p[j] = x0.p[j] + a * (x0.p[j] - points[NP - 1].p[j]);
         }
         considerConstrains(xr.p);
         xr.fp = opt_func(xr.p);
 
 
-        if(xr.fp < points[0].fp)	// reflected point is the best one -> expansion
+        if(xr.fp < points[0].fp)   // reflected point is the best one -> expansion
         {
             // calculate expaned point
             for(size_t j = 0; j < N; j++)
             {
-                xe.p[j] = x0.p[j] + b*(xr.p[j] - x0.p[j]);
+                xe.p[j] = x0.p[j] + b * (xr.p[j] - x0.p[j]);
             }
             considerConstrains(xe.p);
             xe.fp = opt_func(xe.p);
@@ -156,7 +153,7 @@ nucmath::OPTIMIZER_RETURN_TYPE nucmath::downhill_simplex_optimization(FUNC2MIN o
             else
                 points[N] = xr;
         }
-        else if(xr.fp < points[N].fp)     // good direction -> repeat
+        else if(xr.fp < points[N].fp)   // good direction -> repeat
         {
             points[N] = xr;
         }
@@ -166,9 +163,9 @@ nucmath::OPTIMIZER_RETURN_TYPE nucmath::downhill_simplex_optimization(FUNC2MIN o
                 points[N] = xr;
 
             // calculate contracted point  xc = x0 + a(x0-xWorst)
-            for (size_t j = 0; j < N; j++)
+            for(size_t j = 0; j < N; j++)
             {
-                xc.p[j] = x0.p[j] + c*(points[N].p[j] - x0.p[j]);
+                xc.p[j] = x0.p[j] + c * (points[N].p[j] - x0.p[j]);
             }
             considerConstrains(xc.p);
             xc.fp = opt_func(xc.p);
@@ -178,15 +175,15 @@ nucmath::OPTIMIZER_RETURN_TYPE nucmath::downhill_simplex_optimization(FUNC2MIN o
             {
                 points[N] = xc;
             }
-            else // -> shrink
+            else   // -> shrink
             {
                 for(size_t i = 1; i < NP; i++)
                 {
                     for(size_t j = 0; j < N; j++)
                     {
-                        points[i].p[j] = points[0].p[j] + d*(points[i].p[j] - points[0].p[j]);
+                        points[i].p[j] = points[0].p[j] + d * (points[i].p[j] - points[0].p[j]);
                     }
-					considerConstrains(points[i].p);
+                    considerConstrains(points[i].p);
                     points[i].fp = opt_func(points[i].p);
                 }
             }
@@ -213,7 +210,7 @@ nucmath::OPTIMIZER_RETURN_TYPE nucmath::downhill_simplex_optimization(FUNC2MIN o
         double dhs_tol = 0;
         for(size_t i = 0; i < N; i++)
         {
-            dhs_tol += (points[i].fp-fbar)*(points[i].fp-fbar);
+            dhs_tol += (points[i].fp - fbar) * (points[i].fp - fbar);
         }
         dhs_tol /= static_cast<double>(N);
         if(sqrt(dhs_tol) < tolerance)

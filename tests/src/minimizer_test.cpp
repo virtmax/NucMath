@@ -1,4 +1,4 @@
-#include "../catch.hpp"
+#include "catch.hpp"
 
 #include "minimizerdownhillsimplex.h"
 #include "functions.h"
@@ -42,10 +42,10 @@ TEST_CASE("Minimizer ")
         result = minimizer.getResult();
         result_sigma = minimizer.getResultUncertainty();
 
-        REQUIRE(result[0] == Approx(-0.053869).epsilon(0.1));
-        REQUIRE(result[1] == Approx(0.554442).epsilon(0.1));
+        REQUIRE(result[0] == Catch::Approx(-0.053869).epsilon(0.1));
+        REQUIRE(result[1] == Catch::Approx(0.554442).epsilon(0.1));
 
-        REQUIRE(result_sigma[0] == Approx(0.970171).epsilon(0.1));
-        REQUIRE(result_sigma[1] == Approx(0.316051).epsilon(0.1));
+        REQUIRE(result_sigma[0] == Catch::Approx(0.970171).epsilon(0.1));
+        REQUIRE(result_sigma[1] == Catch::Approx(0.316051).epsilon(0.1));
     }
 }

@@ -1,4 +1,4 @@
-#include "../catch.hpp"
+#include "catch.hpp"
 
 #include "regression.h"
 
@@ -13,18 +13,18 @@ TEST_CASE("linear regression")
     {
         auto res = regression.linear(points1);
 
-        REQUIRE(res.a1 == Approx(0.554442));
-        REQUIRE(res.a0 == Approx(-0.0538699));
-        REQUIRE(res.r2 == Approx(0.380997));
+        REQUIRE(res.a1 == Catch::Approx(0.554442));
+        REQUIRE(res.a0 == Catch::Approx(-0.0538699));
+        REQUIRE(res.r2 == Catch::Approx(0.380997));
     }
 
     SECTION("correctness 2")
     {
         auto res = regression.linear(points4);
 
-        REQUIRE(res.a1 == Approx(0.000720631));
-        REQUIRE(res.a0 == Approx(3.68938));
-        REQUIRE(res.r2 == Approx(0.99914));
+        REQUIRE(res.a1 == Catch::Approx(0.000720631));
+        REQUIRE(res.a0 == Catch::Approx(3.68938));
+        REQUIRE(res.r2 == Catch::Approx(0.99914));
     }
 
     SECTION("empty list")
@@ -42,9 +42,9 @@ TEST_CASE("quadratic regression")
     {
         auto res = regression.quadratic(points4);
 
-        CHECK(res.a0 == Approx(5.50044));
-        CHECK(res.a1 == Approx(-0.000957004));
-        CHECK(res.a2 == Approx(-3.98576E-9));
+        CHECK(res.a0 == Catch::Approx(5.50044));
+        CHECK(res.a1 == Catch::Approx(-0.000957004));
+        CHECK(res.a2 == Catch::Approx(-3.98576E-9));
         //REQUIRE(res.r2 == Approx(0.99914));
     }
 }

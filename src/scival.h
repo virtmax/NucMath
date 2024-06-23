@@ -1,10 +1,8 @@
 #pragma once
 
 
-
 namespace nucmath
 {
-
 
 class SciVal
 {

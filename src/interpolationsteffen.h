@@ -2,11 +2,12 @@
 
 #pragma once
 
+#include "functions.h"
+#include "interpolationdata.h"
+
+#include <cmath>
 #include <iostream>
 #include <vector>
-#include <cmath>
-#include "interpolationdata.h"
-#include "functions.h"
 
 
 namespace nucmath

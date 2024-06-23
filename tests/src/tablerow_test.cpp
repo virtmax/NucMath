@@ -1,4 +1,4 @@
-#include "../catch.hpp"
+#include "catch.hpp"
 
 #include "tablerow.h"
 
@@ -9,8 +9,8 @@ TEST_CASE("TableRow")
         nucmath::TableRow row(4);
 
         REQUIRE(row.getNumOfColumns() == 4);
-        REQUIRE(row.getMax() == Approx(0.0));
-        REQUIRE(row.getMin() == Approx(0.0));
+        REQUIRE(row.getMax() == Catch::Approx(0.0));
+        REQUIRE(row.getMin() == Catch::Approx(0.0));
     }
 
     SECTION("create with constructor 2")
@@ -18,8 +18,8 @@ TEST_CASE("TableRow")
         nucmath::TableRow row({1, -4e7, 5, 7, 4.84e43});
 
         REQUIRE(row.getNumOfColumns() == 5);
-        REQUIRE(row.getMin() == Approx(-4e7));
-        REQUIRE(row.getMax() == Approx(4.84e43));
+        REQUIRE(row.getMin() == Catch::Approx(-4e7));
+        REQUIRE(row.getMax() == Catch::Approx(4.84e43));
     }
 
     SECTION("create with constructor 3")
@@ -28,8 +28,8 @@ TEST_CASE("TableRow")
         nucmath::TableRow row(row2);
 
         REQUIRE(row.getNumOfColumns() == 5);
-        REQUIRE(row.getMin() == Approx(-4e7));
-        REQUIRE(row.getMax() == Approx(4.84e43));
+        REQUIRE(row.getMin() == Catch::Approx(-4e7));
+        REQUIRE(row.getMax() == Catch::Approx(4.84e43));
     }
 
     SECTION("setNumOfColumns")
@@ -42,15 +42,15 @@ TEST_CASE("TableRow")
 
         REQUIRE(row.getNumOfColumns() == 5);
 
-        REQUIRE(row.getMin() == Approx(10.12345));
-        REQUIRE(row.getMax() == Approx(10.12345));
+        REQUIRE(row.getMin() == Catch::Approx(10.12345));
+        REQUIRE(row.getMax() == Catch::Approx(10.12345));
     }
 
     SECTION("operator[] const")
     {
         const nucmath::TableRow row({1, -4e7, 5, 7, 4.84e43});
 
-        REQUIRE(row[3] == Approx(7));
+        REQUIRE(row[3] == Catch::Approx(7));
     }
 
     SECTION("operator* const")
@@ -58,8 +58,8 @@ TEST_CASE("TableRow")
         const nucmath::TableRow row({-1, -2, 3, -4, 1.5});
 
         const auto& row2 = row*2;
-        REQUIRE(row2[0] == Approx(-2.0));
-        REQUIRE(row2[4] == Approx(3.0));
+        REQUIRE(row2[0] == Catch::Approx(-2.0));
+        REQUIRE(row2[4] == Catch::Approx(3.0));
     }
 
     SECTION("operator+=")
@@ -67,8 +67,8 @@ TEST_CASE("TableRow")
         nucmath::TableRow row({-1, -2, 3, -4, 1.5});
         row += 10;
 
-        REQUIRE(row[0] == Approx(9));
-        REQUIRE(row[4] == Approx(11.5));
+        REQUIRE(row[0] == Catch::Approx(9));
+        REQUIRE(row[4] == Catch::Approx(11.5));
     }
 
     SECTION("throw exceptions 1")

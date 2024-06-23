@@ -7,7 +7,7 @@ namespace nucmath
 {
 
 
-	// mu = zentrum
-	double normalDistIntegral(double mu, double sigma, double from, double to);
+// mu = zentrum
+double normalDistIntegral(double mu, double sigma, double from, double to);
 
 }

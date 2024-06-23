@@ -1,16 +1,15 @@
 
 #pragma once
 
-#include <algorithm>
-#include <array>
-#include <vector>
-#include <string>
-#include <stdexcept>
 
 #include "utils.h"
 #include "vector.h"
 
-
+#include <algorithm>
+#include <array>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 namespace nucmath
 {
@@ -20,104 +19,114 @@ class Matrix
 {
 public:
     Matrix();
+    Matrix(const nucmath::Matrix<T>& mat);
+
     Matrix(size_t nRows, size_t nColumns);
     Matrix(size_t nRows, size_t nColumns, const std::vector<T>& elements);
     Matrix(const std::vector<std::vector<T>>& elements);
-public:
 
+public:
     size_t rows() const;
     size_t columns() const;
 
-    const T& operator() (size_t row, size_t column) const;
-    T& operator() (size_t row, size_t column);
+    const T& operator()(size_t row, size_t column) const;
+    T& operator()(size_t row, size_t column);
 
-    Matrix& operator = (const Matrix& mat);
-    Matrix& operator = (const std::vector<std::vector<T>>& elements);
+    Matrix& operator=(const Matrix& mat);
+    Matrix& operator=(const std::vector<std::vector<T>>& elements);
 
-    const Matrix operator * (const Matrix& mat) const;
-    Vector<T> operator * (const Vector<T>& vec) const;
+    const Matrix operator*(const Matrix& mat) const;
+    Vector<T> operator*(const Vector<T>& vec) const;
 
-    bool operator == (const Matrix& mat) const;
-    bool operator != (const Matrix& mat) const;
+    bool operator==(const Matrix& mat) const;
+    bool operator!=(const Matrix& mat) const;
+
+    const auto& data() const { return field; }
 
     std::string str() const;
 
-    nucmath::Matrix<T> &transpose();
+    nucmath::Matrix<T>& transpose();
 
 private:
-    size_t nRows;
-    size_t nColumns;
+    size_t nRows {0};
+    size_t nColumns {0};
 
-    std::vector<double> data;
+    std::vector<double> field;
 };
 }
 
-template<typename T>
+template <typename T>
 nucmath::Matrix<T>::Matrix()
 {
 }
 
-template<typename T>
+template <typename T>
+nucmath::Matrix<T>::Matrix(const nucmath::Matrix<T>& mat)
+{
+    *this = mat;
+}
+
+template <typename T>
 nucmath::Matrix<T>::Matrix(size_t nRows, size_t nColumns)
 {
     this->nRows = nRows;
     this->nColumns = nColumns;
-    data.assign(nColumns*nRows, 0.0);
+    field.assign(nColumns * nRows, 0.0);
 }
 
-template<typename T>
+template <typename T>
 nucmath::Matrix<T>::Matrix(size_t nRows, size_t nColumns, const std::vector<T>& elements)
 {
-    if(elements.size() != nColumns*nRows)
+    if(elements.size() != nColumns * nRows)
         throw std::invalid_argument("Matrix(std::vector<T> elements): elements length not enough to fill the matrix.");
 
     this->nRows = nRows;
     this->nColumns = nColumns;
 
-    data = elements;
+    field = elements;
 }
 
-template<typename T>
+template <typename T>
 nucmath::Matrix<T>::Matrix(const std::vector<std::vector<T>>& elements)
 {
     *this = elements;
 }
 
-template<typename T>
+template <typename T>
 size_t nucmath::Matrix<T>::rows() const
 {
     return nRows;
 }
 
-template<typename T>
+template <typename T>
 size_t nucmath::Matrix<T>::columns() const
 {
     return nColumns;
 }
 
-template<typename T>
-const T& nucmath::Matrix<T>::operator() (size_t row, size_t column) const
+template <typename T>
+const T& nucmath::Matrix<T>::operator()(size_t row, size_t column) const
 {
-    return data[row*nColumns + column];
+    return field[row * nColumns + column];
 }
 
-template<typename T>
-T& nucmath::Matrix<T>::operator() (size_t row, size_t column)
+template <typename T>
+T& nucmath::Matrix<T>::operator()(size_t row, size_t column)
 {
-    return data[row*nColumns + column];
+    return field[row * nColumns + column];
 }
 
-template<typename T>
-nucmath::Matrix<T>& nucmath::Matrix<T>::operator = (const Matrix& mat)
+template <typename T>
+nucmath::Matrix<T>& nucmath::Matrix<T>::operator=(const Matrix& mat)
 {
     nColumns = mat.columns();
     nRows = mat.rows();
-    data = mat.data();
+    field = mat.data();
     return *this;
 }
 
-template<typename T>
-nucmath::Matrix<T>& nucmath::Matrix<T>::operator = (const std::vector<std::vector<T>>& elements)
+template <typename T>
+nucmath::Matrix<T>& nucmath::Matrix<T>::operator=(const std::vector<std::vector<T>>& elements)
 {
     if(elements.size() == 0)
         throw std::invalid_argument("nucmath::Matrix<T>::operator = (const std::vector<std::vector<T>>& elements): "
@@ -125,7 +134,7 @@ nucmath::Matrix<T>& nucmath::Matrix<T>::operator = (const std::vector<std::vecto
 
     nRows = elements.size();
     nColumns = elements.at(0).size();
-    data.resize(nRows*nColumns);
+    field.resize(nRows * nColumns);
 
     size_t index = 0;
     for(const auto& row : elements)
@@ -135,15 +144,15 @@ nucmath::Matrix<T>& nucmath::Matrix<T>::operator = (const std::vector<std::vecto
                                         "rows should have the same number of columns.");
         for(const auto& el : row)
         {
-            data[index++] = el;
+            field[index++] = el;
         }
     }
 
     return *this;
 }
 
-template<typename T>
-const nucmath::Matrix<T> nucmath::Matrix<T>::operator * (const Matrix& mat) const
+template <typename T>
+const nucmath::Matrix<T> nucmath::Matrix<T>::operator*(const Matrix& mat) const
 {
     if(nColumns != mat.rows())
         throw std::invalid_argument("Matrix<T>::operator == (const Matrix& mat): mat has wrong dimensions.");
@@ -156,7 +165,7 @@ const nucmath::Matrix<T> nucmath::Matrix<T>::operator * (const Matrix& mat) cons
         {
             for(size_t k = 0; k < mat.columns(); k++)
             {
-                matC(i,k) += this->operator()(i,j) * mat(j,k);
+                matC(i, k) += this->operator()(i, j) * mat(j, k);
             }
         }
     }
@@ -164,11 +173,12 @@ const nucmath::Matrix<T> nucmath::Matrix<T>::operator * (const Matrix& mat) cons
     return matC;
 }
 
-template<typename T>
-nucmath::Vector<T> nucmath::Matrix<T>::operator * (const Vector<T>& vec) const
+template <typename T>
+nucmath::Vector<T> nucmath::Matrix<T>::operator*(const Vector<T>& vec) const
 {
     if(nColumns != vec.dim())
-        throw std::invalid_argument("Matrix<T>::operator * (const Vector<T>& vec): Vector dimension should be equal to the number of matrix columns.");
+        throw std::invalid_argument(
+            "Matrix<T>::operator * (const Vector<T>& vec): Vector dimension should be equal to the number of matrix columns.");
 
     nucmath::Vector<T> res(nRows);
 
@@ -176,15 +186,15 @@ nucmath::Vector<T> nucmath::Matrix<T>::operator * (const Vector<T>& vec) const
     {
         for(size_t j = 0; j < nColumns; j++)
         {
-            res(i) += this->operator()(i,j) * vec(j);
+            res(i) += this->operator()(i, j) * vec(j);
         }
     }
 
     return res;
 }
 
-template<typename T>
-bool nucmath::Matrix<T>::operator == (const Matrix& mat) const
+template <typename T>
+bool nucmath::Matrix<T>::operator==(const Matrix& mat) const
 {
     if(mat.columns() != nColumns || mat.rows() != nRows)
         throw std::invalid_argument("Matrix<T>::operator == (const Matrix& mat): mat has wrong dimensions.");
@@ -193,7 +203,7 @@ bool nucmath::Matrix<T>::operator == (const Matrix& mat) const
     {
         for(size_t j = 0; j < nColumns; j++)
         {
-            if(!nucmath::isEqual(mat(i,j), this->operator()(i,j)))
+            if(!nucmath::isEqual(mat(i, j), this->operator()(i, j)))
                 return false;
         }
     }
@@ -201,8 +211,8 @@ bool nucmath::Matrix<T>::operator == (const Matrix& mat) const
     return true;
 }
 
-template<typename T>
-bool nucmath::Matrix<T>::operator != (const Matrix& mat) const
+template <typename T>
+bool nucmath::Matrix<T>::operator!=(const Matrix& mat) const
 {
     if(mat.columns() != nColumns || mat.rows() != nRows)
         throw std::invalid_argument("Matrix<T>::operator != (const Matrix& mat): mat has wrong dimensions.");
@@ -210,7 +220,7 @@ bool nucmath::Matrix<T>::operator != (const Matrix& mat) const
     return !this->operator==(mat);
 }
 
-template<typename T>
+template <typename T>
 std::string nucmath::Matrix<T>::str() const
 {
     std::string s = "";
@@ -219,26 +229,25 @@ std::string nucmath::Matrix<T>::str() const
         s.append("(");
         for(size_t i = 0; i < nColumns; i++)
         {
-            if(i+1 != nColumns)
+            if(i + 1 != nColumns)
                 s.append("\t");
-
         }
-        s.append(std::to_string(data[i]));
+        s.append(std::to_string(field[i]));
     }
     return s;
 }
 
-template<typename T>
-nucmath::Matrix<T> &nucmath::Matrix<T>::transpose()
+template <typename T>
+nucmath::Matrix<T>& nucmath::Matrix<T>::transpose()
 {
     std::vector<T> transposed;
-    for(int n = 0; n < nRows*nColumns; n++)
+    for(int n = 0; n < nRows * nColumns; n++)
     {
-        int i = n/nRows;
-        int j = n%nRows;
-        transposed[n] = data[nColumns*j + i];
+        int i = n / nRows;
+        int j = n % nRows;
+        transposed[n] = field[nColumns * j + i];
     }
-    data = transposed;
+    field = transposed;
 
     return *this;
 }

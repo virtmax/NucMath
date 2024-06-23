@@ -1,4 +1,4 @@
-#include "../catch.hpp"
+#include "catch.hpp"
 
 #include "matrix.h"
 
@@ -9,7 +9,7 @@ TEST_CASE("Matrix")
 
     SECTION("create")
     {
-        REQUIRE(mat(1,2) == Approx(6));
+        REQUIRE(mat(1,2) == Catch::Approx(6));
     }
 
     SECTION("operator ==")
@@ -24,7 +24,8 @@ TEST_CASE("Matrix")
 
     SECTION("operator = (const Matrix& mat)")
     {
-        nucmath::Matrix<double> mat2 = mat;
+        nucmath::Matrix<double> mat2;
+        mat2 = mat;
         REQUIRE(mat == mat2);
     }
 
@@ -42,7 +43,7 @@ TEST_CASE("Matrix")
 
         auto& res = mat1*mat2;
 
-        REQUIRE(res(0,0) == Approx(-5.0));
+        REQUIRE(res(0,0) == Catch::Approx(-5.0));
     }
 
     SECTION("operator * 2")
@@ -81,11 +82,11 @@ TEST_CASE("Matrix")
 
     SECTION("operator * (const Vector<T>& vec)")
     {
-        nucmath::Matrix<double> mat(2, 3, {3, 2, 1,
+        nucmath::Matrix<double> mat1(2, 3, {3, 2, 1,
                                            1, 0, 2});
         nucmath::Vector<double> vec({1, 0, 4});
 
-        const auto& res = mat*vec;
+        const auto& res = mat1*vec;
 
         REQUIRE(res == std::vector<double>({7, 9}));
     }

@@ -13,7 +13,6 @@ Interpolation::Interpolation()
 
 Interpolation::~Interpolation()
 {
-
 }
 
 
@@ -23,7 +22,7 @@ std::vector<std::pair<double, double>> Interpolation::LinearInterpolation()
     // f(x) = m*x + b
     std::vector<std::pair<double, double>> param_list;
 
-    for (size_t i = 0; i < m_data.size()-1; i++)
+    for(size_t i = 0; i < m_data.size() - 1; i++)
     {
         double m = (m_data[i + 1].second - m_data[i].second) / (m_data[i + 1].first - m_data[i].first);
 
@@ -40,7 +39,7 @@ std::vector<std::pair<double, double>> Interpolation::SteffenInterpolation()
     // f(x) = m*x + b
     std::vector<std::pair<double, double>> param_list;
 
-    for (size_t i = 0; i < m_data.size() - 1; i++)
+    for(size_t i = 0; i < m_data.size() - 1; i++)
     {
         double m = (m_data[i + 1].second - m_data[i].second) / (m_data[i + 1].first - m_data[i].first);
 

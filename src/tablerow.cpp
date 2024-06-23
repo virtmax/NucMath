@@ -9,7 +9,7 @@ nucmath::TableRow::TableRow(size_t nColumns, double defaultValue)
     data.assign(nColumns, defaultValue);
 }
 
-nucmath::TableRow::TableRow(const std::vector<double> &row)
+nucmath::TableRow::TableRow(const std::vector<double>& row)
 {
     reset();
     this->data = row;
@@ -45,7 +45,7 @@ std::string nucmath::TableRow::str() const
     {
         s.append(std::to_string(data[i]));
 
-        if(i+1 != nColumns)
+        if(i + 1 != nColumns)
             s.append("\t");
     }
     return s;
@@ -106,8 +106,8 @@ double nucmath::TableRow::getMin()
 void nucmath::TableRow::updateStatistics()
 {
     const auto& [minindex, maxindex] = std::minmax_element(data.begin(), data.end());
-            this->min = *minindex;
-            this->max = *maxindex;
+    this->min = *minindex;
+    this->max = *maxindex;
 
-            changed = false;
+    changed = false;
 }

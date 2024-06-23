@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vector>
 #include <iostream>
+#include <vector>
 
 namespace nucmath
 {
@@ -16,7 +16,7 @@ class InterpolatedData
 {
 public:
     InterpolatedData() { last_indx = 0; };
-    ~InterpolatedData(){};
+    ~InterpolatedData() {};
 
     double operator[](double x) const
     {
@@ -32,35 +32,32 @@ public:
         }
 
         // Nach dem richtigen Spline-in der liste Suchen. Binäre Suche.
-        size_t imin = 0, imax = interpolationData.size()-1;
+        size_t imin = 0, imax = interpolationData.size() - 1;
 
         while(imin <= imax)
         {
-            size_t indx =  imin + ((imax - imin) / 2);  // binäre Suche
+            size_t indx = imin + ((imax - imin) / 2);   // binäre Suche
 
-            const InterpolationParameter &intpDi = interpolationData.at(indx);
+            const InterpolationParameter& intpDi = interpolationData.at(indx);
 
             // den Intervall überprüfen
-            if(intpDi.x_min <= x
-                    && (indx+1 < interpolationData.size()) ? (x <= interpolationData.at(indx+1).x_min) : false)
+            if(intpDi.x_min <= x && (indx + 1 < interpolationData.size()) ? (x <= interpolationData.at(indx + 1).x_min) : false)
             {
                 x = x - intpDi.x_min;
-                return intpDi.p[0]*x*x*x + intpDi.p[1]*x*x + intpDi.p[2]*x + intpDi.p[3];
+                return intpDi.p[0] * x * x * x + intpDi.p[1] * x * x + intpDi.p[2] * x + intpDi.p[3];
             }
             else
             {
                 // Suchgrenzen verschieben
                 if(x < intpDi.x_min)
                 {
-                    imax = indx-1;
+                    imax = indx - 1;
                 }
                 else
                 {
-                    imin = indx+1;
+                    imin = indx + 1;
                 }
             }
-
-
         }
 
         return 0;
